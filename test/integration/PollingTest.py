@@ -15,8 +15,8 @@ Preconditions:
 
 import time
 
-from PsController.Control.Controller import Controller
-from PsController.Model.Model import Model
+from ps_controller.Control.Controller import Controller
+from ps_controller.Model.Model import Model
 
 
 control = Controller(Model=Model(), threaded=False)

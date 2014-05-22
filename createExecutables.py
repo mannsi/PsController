@@ -1,5 +1,5 @@
 from cx_Freeze import setup, Executable
-import PsController.Utilities.OsHelper as osHelper
+import ps_controller.utilities.OsHelper as osHelper
 
 platFormBase = "Console"
 if osHelper.getCurrentOs() == osHelper.WINDOWS:
@@ -8,9 +8,9 @@ if osHelper.getCurrentOs() == osHelper.WINDOWS:
 buildOptions = dict(include_files=['Icons/'])
 
 setup(
-    name="PsController"
+    name="ps_controller"
     , version="0.1"
-    , description="PsController"
+    , description="ps_controller"
     , options=dict(build_exe=buildOptions)
-    , executables=[Executable("psControllerMain.py", base=platFormBase, targetName="PsController.exe")]
+    , executables=[Executable("psControllerMain.py", base=platFormBase, targetName="ps_controller.exe")]
 )

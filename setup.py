@@ -1,7 +1,7 @@
 from ez_setup import use_setuptools
 use_setuptools()
 from setuptools import setup, find_packages
-import PsController.Utilities.OsHelper as osHelper
+import ps_controller.utilities.OsHelper as osHelper
 
 systemType = osHelper.getCurrentOs()
 
@@ -17,11 +17,11 @@ else:
                  "Icons/green-circle-16.gif"]
 
 setup(
-    name="PsController"
+    name="ps_controller"
     , version="0.1"
-    , description="PsController"
+    , description="ps_controller"
     , packages=find_packages()
-    , package_data={'PsController': ['Icons/*.gif']}
+    , package_data={'ps_controller': ['Icons/*.gif']}
     , install_requires=[
         "APScheduler == 2.1.1",
         "crcmod == 1.7",
@@ -31,7 +31,7 @@ setup(
     #, data_files=[("Icons", dataFiles)]
     , entry_points={
         "console_scripts": [
-            "PsController = psControllerMain:run"
+            "ps_controller = psControllerMain:run"
 
         ]
     }
