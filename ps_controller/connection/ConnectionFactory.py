@@ -2,6 +2,8 @@ from ..Constants import *
 from ..connection.UsbConnection import UsbConnection
 from ..data_mapping.UsbDataMapping import UsbDataMapping
 
+import serial
+
 
 class ConnectionFactory:
     def __init__(self, logger):
@@ -14,9 +16,8 @@ class ConnectionFactory:
                 return self._usb_connection
             else:
                 self._usb_connection = UsbConnection(
-                    baud_rate=9600,
-                    timeout=0.1,
                     logger=self.logger,
+                    serial_link_generator=self._get_serial_link,
                     id_message=ConnectionFactory._get_device_message_id(),
                     device_verification_func=self._device_id_response_function)
             return self._usb_connection
@@ -37,3 +38,6 @@ class ConnectionFactory:
         except:
             self.logger.info("Did not receive an ACKNOWLEDGE response")
             return False
+
+    def _get_serial_link(self):
+        return serial.Serial(baudrate=9600, timeout=0.1)

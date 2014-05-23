@@ -10,17 +10,29 @@ from ..Constants import *
 class UsbConnection(BaseConnectionInterface):
     def __init__(
             self,
-            baud_rate,
-            timeout,
             logger,
+            serial_link_generator,
             id_message,
             device_verification_func):
-        self._baud_rate = baud_rate
-        self._timeout = timeout
+        """
+        Parameters
+        ----------
+        logger : object
+            A logger object that the connection can use to log events
+        serial_link_generator : serial.Serial interface generator
+            A function that returns a interface that implements serial.Serial. Allows mocking
+        id_message : bytes
+            A data package that is sent to the device in order to establish a connection.
+            `device_verification_func` function is then used to evaluate the device response
+        device_verification_func : function(device_response)
+            A function used to establish if device is responsive on given port. First `id_message`
+            is sent to the device and then    this function evaluates the device response and returns a bool
+        """
         self._logger = logger
+        self._serial_link_generator = serial_link_generator
         self._id_message = id_message
         self._device_verification_func = device_verification_func
-        self._connection = None
+        self._base_connection = serial_link_generator()
 
     def connect(self):
         """
@@ -29,7 +41,8 @@ class UsbConnection(BaseConnectionInterface):
         available_ports = self._available_connections()
         for port in available_ports:
             if self._device_on_port(port):
-                self._connection = serial.Serial(port, self._baud_rate, timeout=self._timeout)
+                self._base_connection.port = port
+                self._base_connection.open()
                 break
         return self.connected()
 
@@ -37,31 +50,31 @@ class UsbConnection(BaseConnectionInterface):
         """
         Disconnects from the currently connected PS201.
         """
-        self._connection.close()
+        self._base_connection.close()
 
     def connected(self):
         """
         Returns a bool value indicating if connected to PS201
         """
-        if not self._connection:
-            return False
-        return self._connection.connected()
+        return self._base_connection.isOpen()
 
     def clear_buffer(self):
         """
         Clears the read buffer from the device.
         """
         if self.connected():
-            self._connection.flushInput()
+            self._base_connection.flushInput()
 
     def get(self):
         """
-        Reads the values from PS201 and returns them. A single response from PS201 is surrounded with START characters
-        If not connected, None is returned
+        Reads a single response from PS201 and returns them. A single response from PS201 is surrounded
+        with START characters. If not connected, None is returned
         """
         if not self.connected():
             return None
-        serial_response = self._read_device_response(self._connection)
+        serial_response = self._read_device_response(self._base_connection)
+        if serial_response == b'':
+            return None
         return serial_response
 
     def set(self, sending_data):
@@ -70,7 +83,7 @@ class UsbConnection(BaseConnectionInterface):
         """
         if not self.connected():
             return
-        self._send_to_device(self._connection, sending_data)
+        self._send_to_device(self._base_connection, sending_data)
 
     def _available_connections(self):
         """Get available usb ports"""
@@ -86,9 +99,11 @@ class UsbConnection(BaseConnectionInterface):
 
         for port in usb_list:
             try:
-                con = serial.Serial(port, self._baud_rate, timeout=0.01)
-                available.append(con.portstr)
-                con.close()
+                tmp_connection = self._serial_link_generator()
+                tmp_connection.port = port
+                tmp_connection.open()
+                available.append(tmp_connection.port)
+                tmp_connection.close()
             except serial.SerialException:
                 pass
         return available
@@ -118,9 +133,12 @@ class UsbConnection(BaseConnectionInterface):
 
     def _device_on_port(self, usb_port):
         try:
-            temp_connection = serial.Serial(usb_port, self._baud_rate, timeout=self._timeout)
-            self._send_to_device(temp_connection, self._id_message)
-            device_response = self._read_device_response(temp_connection)
+            tmp_connection = self._serial_link_generator()
+            tmp_connection.port = usb_port
+            tmp_connection.open()
+            self._send_to_device(tmp_connection, self._id_message)
+            device_response = self._read_device_response(tmp_connection)
+            tmp_connection.close()
             return self._device_verification_func(device_response)
-        except:
+        except Exception as e:
             return False
