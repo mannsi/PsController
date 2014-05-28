@@ -3,7 +3,7 @@ use_setuptools()
 from setuptools import setup, find_packages
 import ps_controller.utilities.OsHelper as osHelper
 
-systemType = osHelper.getCurrentOs()
+systemType = osHelper.get_current_os()
 
 if systemType == osHelper.WINDOWS:
     dataFiles = ["Icons\\electricity-24.gif",

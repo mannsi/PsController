@@ -2,7 +2,7 @@ import logging
 
 from ..connection.ConnectionFactory import ConnectionFactory
 from .UsbProtocol import UsbProtocol
-from ..Constants import *
+from ..Constants import Constants
 
 
 class ProtocolFactory:
@@ -11,7 +11,7 @@ class ProtocolFactory:
 
     def get_protocol(self, protocol_type):
         connection = ConnectionFactory(
-            logger=logging.getLogger(LOGGER_NAME)).get_connection(connection_type=protocol_type)
+            logger=logging.getLogger(Constants.LOGGER_NAME)).get_connection(connection_type=protocol_type)
         if protocol_type == "usb":
             if self._usb_protocol:
                 return self._usb_protocol

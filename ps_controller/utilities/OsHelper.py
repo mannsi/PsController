@@ -5,7 +5,7 @@ LINUX = 20
 OSX = 30
 
 
-def getCurrentOs():
+def get_current_os():
     system_name = platform.system()
     if system_name == "Windows":
         return WINDOWS

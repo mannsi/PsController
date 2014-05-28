@@ -2,7 +2,7 @@ from cx_Freeze import setup, Executable
 import ps_controller.utilities.OsHelper as osHelper
 
 platFormBase = "Console"
-if osHelper.getCurrentOs() == osHelper.WINDOWS:
+if osHelper.get_current_os() == osHelper.WINDOWS:
     platFormBase = "Win32GUI"  # For windows to hide the console window in the back
 
 buildOptions = dict(include_files=['Icons/'])

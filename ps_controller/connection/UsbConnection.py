@@ -4,7 +4,7 @@ import serial
 
 from .BaseConnectionInterface import BaseConnectionInterface
 import ps_controller.utilities.OsHelper as osHelper
-from ..Constants import *
+from ..Constants import Constants
 
 
 class UsbConnection(BaseConnectionInterface):
@@ -66,28 +66,17 @@ class UsbConnection(BaseConnectionInterface):
             self._base_connection.flushInput()
 
     def get(self):
-        """
-        Reads a single response from PS201 and returns them. A single response from PS201 is surrounded
-        with START characters. If not connected, None is returned
-        """
-        if not self.connected():
-            return None
         serial_response = self._read_device_response(self._base_connection)
         if serial_response == b'':
             return None
         return serial_response
 
     def set(self, sending_data):
-        """
-        Sends sending_data to the connected PS201.
-        """
-        if not self.connected():
-            return
         self._send_to_device(self._base_connection, sending_data)
 
-    def _available_connections(self):
+    def _available_connections(self) -> list:
         """Get available usb ports"""
-        system_type = osHelper.getCurrentOs()
+        system_type = osHelper.get_current_os()
         available = []
         usb_list = []
         if system_type == osHelper.WINDOWS:
@@ -104,17 +93,17 @@ class UsbConnection(BaseConnectionInterface):
                 tmp_connection.open()
                 available.append(tmp_connection.port)
                 tmp_connection.close()
-            except serial.SerialException:
+            except serial.SerialException as e:
                 pass
         return available
 
-    def _send_to_device(self, serial_connection, data):
+    def _send_to_device(self, serial_connection, data: bytearray):
         serial_connection.write(data)
 
-    def _read_device_response(self, serial_connection):
+    def _read_device_response(self, serial_connection: serial.Serial) -> bytes:
         return self._read_line(serial_connection)
 
-    def _read_line(self, serial_connection):
+    def _read_line(self, serial_connection: serial.Serial) -> bytes:
         """Custom readLine method to avoid end of line char issues"""
         line = bytearray()
         start_count = 0
@@ -125,7 +114,7 @@ class UsbConnection(BaseConnectionInterface):
             else:
                 break
 
-            if c[0] == START:
+            if c[0] == Constants.START:
                 start_count += 1
             if start_count == 2:
                 break
@@ -139,6 +128,6 @@ class UsbConnection(BaseConnectionInterface):
             self._send_to_device(tmp_connection, self._id_message)
             device_response = self._read_device_response(tmp_connection)
             tmp_connection.close()
-            return self._device_verification_func(device_response)
+            return self._device_verification_func(device_response, usb_port)
         except Exception as e:
             return False

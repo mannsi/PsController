@@ -1,38 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link rel="stylesheet" type="text/css" href="app.css">
+    <link href="css/app.css" rel="stylesheet">
+    <!--<link href="css/simple_web_buttons.css" rel="stylesheet">-->
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.0/jquery.min.js"></script>
+    <script src="js/Chart.js-master/Chart.js"></script>
+    <script src="js/app.js"></script>
     <title>Random title</title>
 </head>
 <body>
-<div class="LeftSideValues">
-    <div class="ValueGroup">
-        <div class="Title">Output</div>
-        <div class="Value">
-            <label>xx.xx V</label>
-        </div>
-        <div class="Value">
-            <label>yyyy mA</label>
-        </div>
-    </div>
-    <div class="ValueGroup">
-        <div class="Title">Target</div>
-        <div class="Value">
-            <input type="text" value="xx.xx"> <label>V</label>
-        </div>
-        <div class="Value">
-            <input type="text" value="yyyy"> <label>mA</label>
-        </div>
-    </div>
-</div>
-
-<div class="Graphs">
-    <div class="VoltageGraph">
-
+<div class="main-content">
+    <div class="values">
+        <div class="Title">Status</div>
+        Output voltage: <span id="outputVoltage">xx.xx</span> V <br/>
+        Output current: <span id="outputCurrent">yyyy</span> mA <br/>
+        Input voltage: <span id="inputVoltage">xx.xx</span> V <br/>
+        Prereg voltage: <span id="preRegVoltage">xx.xx</span> V <br/>
+        Output on: <input id="outputOn" type="checkbox"><br/>
+        Target voltage: <input id="targetVoltage" type="number" value="xx.xx"> <label>V</label>
+        <a id="setTargetVoltage" href="#" class="button black">Set</a> <br/>
+        Target current: <input id="targetCurrent" type="number" value="yyyy"> <label>mA</label>
+        <a id="setTargetCurrent" href="#" class="button black">Set</a>
     </div>
 
-    <div class="CurrentGraph">
+    <div class="graphs">
+        <div id="voltageGraphContainer" class="ChartContainer">
+            <div class="graphTitle">Voltage</div>
+            <canvas id="voltageChart" class="LineChart"></canvas>
+        </div>
 
+        <div id="currentGraphContainer" class="ChartContainer">
+            <div class="graphTitle">Voltage</div>
+            <canvas id="currentChart" class="LineChart"></canvas>
+        </div>
     </div>
 </div>
 </body>

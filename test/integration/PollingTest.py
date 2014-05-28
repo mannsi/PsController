@@ -5,8 +5,8 @@ increments of 0.1 V for a low target current. Then it sets a low voltage and goe
 communication between device and computer behaves as expected.
 
 The test condition are
- - target voltage and current are the same as what was set
- - output voltage is closer to the set values then a predefined deviation
+- target voltage and current are the same as what was set
+- output voltage is closer to the set values then a predefined deviation
 
 Preconditions:
 - DPS201 is connected to the computer via usb
@@ -14,12 +14,12 @@ Preconditions:
 """
 
 import time
+import unittest
 
-from ps_controller.Control.Controller import Controller
-from ps_controller.Model.Model import Model
+from ps_web_server.Wrapper import Wrapper
+from ps_controller.DeviceValues import DeviceValues
 
 
-control = Controller(Model=Model(), threaded=False)
 MAX_VOLTAGE_PERCENTAGE_DEVIATION = 0.02
 MAX_VOLTAGE_ABSOLUTE_DEVIATION = 0.21
 
@@ -30,102 +30,77 @@ TARGET_CURRENT = 10
 SLEEP_BETWEEN_STEPS = 2
 
 
-def connect():
-    if control.connected:
-        return True
-    print("Connecting")
-    connected = control.connect()
-    if not connected:
-        print("Unable to connect")
-    else:
-        print("Connected")
-    return connected
+class PollingTest(unittest.TestCase):
+    def setUp(self):
+        self.wrapper = Wrapper()
+        connected = self.wrapper.connect()
+        if not connected:
+            raise Exception("Unable to connect to PS201")
+        self.wrapper.set_values(0, 0)
+        self.wrapper.set_device_on()
 
+    def tearDown(self):
+        self.wrapper.set_values(0, 0)
+        self.wrapper.set_device_off()
 
-def runSetValuesVsOutputValuesTest(targetCurrent, targetVoltage):
-    """Sets the values of the device to target values and then records the device output values.
-    Finally compares these values and throws an exception if they do not match according to expectations"""
-    print("Checking voltage: ", targetVoltage, " and current: ", targetCurrent)
-    control.setTargetCurrent(targetCurrent)
-    control.setTargetVoltage(targetVoltage)
-    time.sleep(SLEEP_BETWEEN_STEPS)
-    measuredTargetCurrent = control.getTargetCurrent()
-    measuredTargetVoltage = control.getTargetVoltage()
-    outputVoltage = control.getOutputVoltage()
-    outputCurrent = control.getOutputCurrent()
-    allValues = control.getAllValues()
+    def test_voltage(self):
+        """
+        Test the range of a voltage values with a current value of TARGET_CURRENT
+        """
+        if not self.wrapper.connected():
+            raise Exception("Not connected")
+        input_voltage = self.wrapper.get_values().input_voltage
+        if input_voltage < 4:
+            raise Exception("Input voltage not high enough to test. Input voltage value: ", input_voltage)
 
-    if targetCurrent != measuredTargetCurrent:
-        raise Exception("Wrong target current measured. Target current is ", targetCurrent,
-                        " but measured target current is ", measuredTargetCurrent)
-    if targetVoltage != measuredTargetVoltage:
-        raise Exception("Wrong target voltage measured. Target voltage is ", targetVoltage,
-                        " but measured target voltage is ", measuredTargetVoltage)
-    compareTargetAndOutputValues(targetVoltage, outputVoltage, targetCurrent, outputCurrent, allValues)
-    print("OK")
+        end_voltage_test_range = input_voltage - 4
+        voltage_values = [x / 10 for x in range(int(end_voltage_test_range * 10))]
+        for v in voltage_values:
+            self._compare_value_set(TARGET_CURRENT, v)
+        print("Test script ran successfully")
 
+    def _test_current(self):
+        """
+        Test the range of current values with voltage value of 1V
+        """
+        if not self.wrapper.connected():
+            raise Exception("Could not connect to device")
 
-def compareTargetAndOutputValues(targetVoltage, outputVoltage, targetCurrent, outputCurrent, allValues):
-    if not currentWithinBounds(targetCurrent, outputCurrent):
-        raiseException(targetCurrent, outputCurrent, "Current")
-    if not voltageWithinBounds(targetVoltage, outputVoltage):
-        raiseException(targetVoltage, outputVoltage, "Voltage")
-    if not currentWithinBounds(targetCurrent, allValues.outputCurrent):
-        raiseException(targetCurrent, allValues.outputCurrent, "All values current")
-    if not voltageWithinBounds(targetVoltage, allValues.outputVoltage):
-        raiseException(targetVoltage, outputVoltage, "All values voltage")
+        for c in range(10, 1000, 10):
+            self._compare_value_set(c, 1)
+        print("Test script ran successfully")
 
+    def _compare_target_and_output_values(self, target_voltage: float, target_current: int, all_values: DeviceValues):
+        if not self._current_within_bounds(target_current, all_values.output_current):
+            self._raise_exception(target_current, all_values.output_current, "Current")
+        if not self._voltage_within_bounds(target_voltage, all_values.output_voltage):
+            self._raise_exception(target_voltage, all_values.output_voltage, "Voltage")
 
-def voltageWithinBounds(target, measured):
-    return abs(target - measured) <= max(MAX_VOLTAGE_ABSOLUTE_DEVIATION, MAX_VOLTAGE_PERCENTAGE_DEVIATION * target)
+    def _voltage_within_bounds(self, target, measured):
+        return abs(target - measured) <= max(MAX_VOLTAGE_ABSOLUTE_DEVIATION, MAX_VOLTAGE_PERCENTAGE_DEVIATION * target)
 
+    def _current_within_bounds(self, target, measured):
+        return abs(target - measured) <= max(MAX_CURRENT_ABSOLUTE_DEVIATION, MAX_CURRENT_PERCENTAGE_DEVIATION * target)
 
-def currentWithinBounds(target, measured):
-    return abs(target - measured) <= max(MAX_CURRENT_ABSOLUTE_DEVIATION, MAX_CURRENT_PERCENTAGE_DEVIATION * target)
+    def _raise_exception(self, target, measured, value_name: str):
+        raise Exception(value_name + " not correct. Target: " + str(target) + " but measure: " + str(measured))
 
+    def _compare_value_set(self, target_current, target_voltage):
+        """Sets the values of the device to target values and then records the device output values.
+        Finally compares these values and throws an exception if they do not match according to expectations"""
+        print("Checking voltage: ", target_voltage, " and current: ", target_current)
+        self.wrapper.set_values(target_voltage, target_current)
+        time.sleep(SLEEP_BETWEEN_STEPS)
+        all_values = self.wrapper.get_values()
 
-def raiseException(target, measured, valueName):
-    raise Exception(valueName, " not correct. Target: ", target, " but measure: ", measured)
-
-
-def runVoltageIntegrationTest():
-    if not control.connected:
-        raise Exception("Not connected")
-    inputVoltage = control.getInputVoltage()
-    if inputVoltage < 4:
-        raise Exception("Input voltage not high enough to test. Input voltage value: ", inputVoltage)
-
-    endVoltageTestRange = inputVoltage - 4
-    voltageValues = [x / 10 for x in range(int(endVoltageTestRange * 10))]
-    for v in voltageValues:
-        runSetValuesVsOutputValuesTest(TARGET_CURRENT, v)
-    print("Test script ran successfully")
-
-
-def runCurrentIntegrationTest():
-    if not control.connected:
-        raise Exception("Could not connect to device")
-
-    for c in range(10, 1000, 10):
-        runSetValuesVsOutputValuesTest(c, 1)
-    print("Test script ran successfully")
-
-
-def setup():
-    connected = connect()
-    if connected:
-        control.stopAutoUpdate()
-        control.setOutputOnOff(True)
-
-
-def cleanup():
-    control.setTargetCurrent(0)
-    control.setTargetVoltage(0)
-    control.setOutputOnOff(False)
+        if target_current != all_values.target_current:
+            raise Exception("Wrong target current measured. Target current is ", target_current,
+                            " but measured target current is ", all_values.target_current)
+        if target_voltage != all_values.target_voltage:
+            raise Exception("Wrong target voltage measured. Target voltage is ", target_voltage,
+                            " but measured target voltage is ", all_values.target_voltage)
+        self._compare_target_and_output_values(target_voltage, target_current, all_values)
 
 
 if __name__ == "__main__":
-    setup()
-    runVoltageIntegrationTest()
-    runCurrentIntegrationTest()
-    cleanup()
+    unittest.main()
