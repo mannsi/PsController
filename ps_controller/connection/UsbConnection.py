@@ -33,18 +33,22 @@ class UsbConnection(BaseConnectionInterface):
         self._id_message = id_message
         self._device_verification_func = device_verification_func
         self._base_connection = serial_link_generator()
+        self._connected = False
 
     def connect(self):
         """
         Tries to connect to a PS201 via USB. Returns a bool indicating if connecting was successful
         """
+        if self._connected:
+            return True
         available_ports = self._available_connections()
         for port in available_ports:
             if self._device_on_port(port):
                 self._base_connection.port = port
                 self._base_connection.open()
+                self._connected = self._base_connection.isOpen()
                 break
-        return self.connected()
+        return self._connected
 
     def disconnect(self):
         """
@@ -56,23 +60,32 @@ class UsbConnection(BaseConnectionInterface):
         """
         Returns a bool value indicating if connected to PS201
         """
-        return self._base_connection.isOpen()
+        return self._connected
 
     def clear_buffer(self):
-        """
-        Clears the read buffer from the device.
-        """
-        if self.connected():
-            self._base_connection.flushInput()
+        try:
+            if self.connected():
+                self._base_connection.flushInput()
+        except Exception as e:
+            self._connected = False
+            raise e
 
     def get(self):
-        serial_response = self._read_device_response(self._base_connection)
-        if serial_response == b'':
-            return None
-        return serial_response
+        try:
+            serial_response = self._read_device_response(self._base_connection)
+            if serial_response == b'':
+                return None
+            return serial_response
+        except Exception as e:
+            self._connected = False
+            raise e
 
     def set(self, sending_data):
-        self._send_to_device(self._base_connection, sending_data)
+        try:
+            self._send_to_device(self._base_connection, sending_data)
+        except Exception as e:
+            self._connected = False
+            raise e
 
     def _available_connections(self) -> list:
         """Get available usb ports"""

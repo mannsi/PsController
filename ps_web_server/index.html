@@ -15,11 +15,15 @@
         Output voltage: <span id="outputVoltage">xx.xx</span> V <br/>
         Output current: <span id="outputCurrent">yyyy</span> mA <br/>
         Input voltage: <span id="inputVoltage">xx.xx</span> V <br/>
-        Prereg voltage: <span id="preRegVoltage">xx.xx</span> V <br/>
-        Output on: <input id="outputOn" type="checkbox"><br/>
-        Target voltage: <input id="targetVoltage" type="number" value="xx.xx"> <label>V</label>
+        <!--Prereg voltage: <span id="preRegVoltage">xx.xx</span> V <br/>-->
+        <!--Output on: <input id="outputOn" type="checkbox"><br/>-->
+        Target voltage: <span id="targetVoltage">xx.xx</span> V <br/>
+        Target current: <span id="targetCurrent">yyyy</span> mA <br/>
+
+        <div class="Title">Set</div>
+        Target voltage: <input id="targetVoltageInput" type="number" value="xx.xx"> <label>V</label>
         <a id="setTargetVoltage" href="#" class="button black">Set</a> <br/>
-        Target current: <input id="targetCurrent" type="number" value="yyyy"> <label>mA</label>
+        Target current: <input id="targetCurrentInput" type="number" value="yyyy"> <label>mA</label>
         <a id="setTargetCurrent" href="#" class="button black">Set</a>
     </div>
 
@@ -28,9 +32,9 @@
             <div class="graphTitle">Voltage</div>
             <canvas id="voltageChart" class="LineChart"></canvas>
         </div>
-
+        <hr>
         <div id="currentGraphContainer" class="ChartContainer">
-            <div class="graphTitle">Voltage</div>
+            <div class="graphTitle">Current</div>
             <canvas id="currentChart" class="LineChart"></canvas>
         </div>
     </div>

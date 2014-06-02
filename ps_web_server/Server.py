@@ -5,25 +5,35 @@ from ps_web_server.Wrapper import Wrapper, MockWrapper
 
 class HelloWorld(object):
     def __init__(self):
-        self._wrapper = MockWrapper()
-        self._wrapper.connect()
+        self._wrapper = Wrapper()
 
     @cherrypy.expose
     def index(self):
-        index_file_path = os.path.join(os.path.dirname(__file__), 'index.html')
+        if self._wrapper.connected():
+            file_to_show = 'index.html'
+        else:
+            file_to_show = 'NoDeviceFound.html'
+
+        index_file_path = os.path.join(os.path.dirname(__file__), file_to_show)
         with open(index_file_path)as f:
             index = f.read()
         return index
 
     @cherrypy.expose
     def get_current_values(self):
-        json_current_values = self._wrapper.get_current_json()
-        return json_current_values
+        try:
+            json_current_values = self._wrapper.get_current_json()
+            return json_current_values
+        except:
+            return ""
 
     @cherrypy.expose
     def get_all_values(self):
-        json_all_values = self._wrapper.get_all_json()
-        return json_all_values
+        try:
+            json_all_values = self._wrapper.get_all_json()
+            return json_all_values
+        except:
+            return ""
 
     @cherrypy.expose
     def set_target_voltage(self, voltage):
@@ -41,11 +51,17 @@ class HelloWorld(object):
 
     @cherrypy.expose
     def turn_on(self):
-        self._wrapper.set_device_on()
+        try:
+            self._wrapper.set_device_on()
+        except:
+            pass
 
     @cherrypy.expose
     def turn_off(self):
-        self._wrapper.set_device_off()
+        try:
+            self._wrapper.set_device_off()
+        except:
+            pass
 
 
 pat = os.path.abspath(os.getcwd())

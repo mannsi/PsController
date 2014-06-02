@@ -46,3 +46,15 @@ class BaseProtocolInterface:
         """
         raise NotImplementedError()
 
+    def start_streaming(self):
+        """
+        Sends signal to device to start streaming values when they change
+        """
+        raise NotImplementedError()
+
+    def get_current_streaming_values(self) -> DeviceValues:
+        """
+        Read accumulated streaming values from device
+        """
+        raise NotImplementedError()
+

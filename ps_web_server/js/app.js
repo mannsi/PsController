@@ -10,8 +10,8 @@ var data = {
 window.voltageChartOptions = {
     scaleOverlay : false,  //Boolean - If we show the scale above the chart data
     scaleOverride : true,  //Boolean - If we want to override with a hard coded scale
-    scaleSteps : 20, //Number - The number of steps in a hard coded scale   //** Required if scaleOverride is true **
-    scaleStepWidth : 0.5,   //Number - The value jump in the hard coded scale
+    scaleSteps : 10, //Number - The number of steps in a hard coded scale   //** Required if scaleOverride is true **
+    scaleStepWidth : 1,   //Number - The value jump in the hard coded scale
     scaleStartValue : 0,   //Number - The scale starting value
     scaleLineColor : "rgba(0,0,0,.1)",  //String - Colour of the scale line
     scaleLineWidth : 1,  //Number - Pixel width of the scale line
@@ -21,10 +21,10 @@ window.voltageChartOptions = {
     scaleFontSize : 12,  //Number - Scale label font size in pixels
     scaleFontStyle : "normal",  //String - Scale label font weight style
     scaleFontColor : "#666",  //String - Scale label font colour
-    scaleShowGridLines : false,  ///Boolean - Whether grid lines are shown across the chart
+    scaleShowGridLines : true,  ///Boolean - Whether grid lines are shown across the chart
     scaleGridLineColor : "rgba(0,0,0,.05)", //String - Colour of the grid lines
     scaleGridLineWidth : 1, //Number - Width of the grid lines
-    bezierCurve : true,  //Boolean - Whether the line is curved between points
+    bezierCurve : false,  //Boolean - Whether the line is curved between points
     pointDot : false, //Boolean - Whether to show a dot for each point
     pointDotRadius : 1, //Number - Radius of each point dot in pixels
     pointDotStrokeWidth : 1, //Number - Pixel width of point dot stroke
@@ -40,8 +40,8 @@ window.voltageChartOptions = {
 window.currentChartOptions = {
     scaleOverlay : false,  //Boolean - If we show the scale above the chart data
     scaleOverride : true,  //Boolean - If we want to override with a hard coded scale
-    scaleSteps : 20, //Number - The number of steps in a hard coded scale   //** Required if scaleOverride is true **
-    scaleStepWidth : 50,   //Number - The value jump in the hard coded scale
+    scaleSteps : 10, //Number - The number of steps in a hard coded scale   //** Required if scaleOverride is true **
+    scaleStepWidth : 100,   //Number - The value jump in the hard coded scale
     scaleStartValue : 0,   //Number - The scale starting value
     scaleLineColor : "rgba(0,0,0,.1)",  //String - Colour of the scale line
     scaleLineWidth : 1,  //Number - Pixel width of the scale line
@@ -51,7 +51,7 @@ window.currentChartOptions = {
     scaleFontSize : 12,  //Number - Scale label font size in pixels
     scaleFontStyle : "normal",  //String - Scale label font weight style
     scaleFontColor : "#666",  //String - Scale label font colour
-    scaleShowGridLines : false,  ///Boolean - Whether grid lines are shown across the chart
+    scaleShowGridLines : true,  ///Boolean - Whether grid lines are shown across the chart
     scaleGridLineColor : "rgba(0,0,0,.05)", //String - Colour of the grid lines
     scaleGridLineWidth : 1, //Number - Width of the grid lines
     bezierCurve : false,  //Boolean - Whether the line is curved between points
@@ -93,11 +93,11 @@ var updateChart = function() {
 var updateStatusValues = function(json_reply) {
     $("#outputVoltage").text(json_reply["outputVoltage"]);
     $("#outputCurrent").text(json_reply["outputCurrent"]);
-    $("#inputVoltage").text(json_reply["inputVoltage"]);
-    $("#preRegVoltage").text(json_reply["preRegVoltage"]);
-    $("#targetVoltage").val(parseFloat(json_reply["targetVoltage"]).toFixed(1));
-    $("#targetCurrent").val(json_reply["targetCurrent"]);
-    $("#outputOn").prop('checked', json_reply["outputOn"]);;
+//    $("#inputVoltage").text(json_reply["inputVoltage"]);
+//    $("#preRegVoltage").text(json_reply["preRegVoltage"]);
+    $("#targetVoltage").text(parseFloat(json_reply["targetVoltage"]).toFixed(1));
+    $("#targetCurrent").text(json_reply["targetCurrent"]);
+    $("#outputOn").prop('checked', json_reply["outputOn"]);
 }
 
 var updateValues = function() {
@@ -119,14 +119,14 @@ var updateValues = function() {
 }
 
 $(document).ready(function() {
-    setInterval("updateValues()",2000);
+    setInterval("updateValues()",200);
 
     $("#setTargetVoltage").click(function() {
-        $.post("http://localhost:8080/set_target_voltage", { voltage: $("#targetVoltage").val()});
+        $.post("http://localhost:8080/set_target_voltage", { voltage: $("#targetVoltageInput").val()});
     });
 
     $("#setTargetCurrent").click(function() {
-      $.post("http://localhost:8080/set_target_current", { current: $("#targetCurrent").val()});
+      $.post("http://localhost:8080/set_target_current", { current: $("#targetCurrentInput").val()});
     });
 
     $( "#outputOn" ).change(function() {
