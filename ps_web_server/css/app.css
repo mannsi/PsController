@@ -1,34 +1,64 @@
-.main-content {
-	display: -webkit-flex;
+body {
+    background-color: #EEEEEE;
+    margin:0px;
+    /*height: 90vh;*/
+}
+
+#voltage, #current {
+    display: -webkit-flex;
     display: flex;
-    height: 97vh;
 }
-.graphs {
+
+.graphContainer {
 	flex: 1;
+    background-color: white;
 }
-.values {
+.statusValues {
     border-width: 1px;
     border-right-style: solid;
     width: 400px;
 }
 
-.values > .Title{
+.statusTitle{
+    text-indent: 10px;
     background-color: gray;
+    font-family: Museo-700, serif;
+    font-size:50px;
+}
+
+#outputCurrent, #outputVoltage{
+    font-size: 70px;
+    font-family: Museo-700, serif;
+}
+
+#targetCurrent, #targetVoltage{
+    color: gray;
+    font-weight: bold;
+    font-size: 30px;
+}
+
+.outputValues, .targetValues{
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    width: 300px;
+}
+
+.targetValuesText{
+    color: gray;
     font-size: 20px;
 }
 
-/*input {*/
-    /*border: 5px solid white;*/
-    /*-webkit-box-shadow:*/
-      /*inset 0 0 8px  rgba(0,0,0,0.1),*/
-            /*0 0 16px rgba(0,0,0,0.1);*/
-    /*-moz-box-shadow:*/
-      /*inset 0 0 8px  rgba(0,0,0,0.1),*/
-            /*0 0 16px rgba(0,0,0,0.1);*/
-    /*box-shadow:*/
-      /*inset 0 0 8px  rgba(0,0,0,0.1),*/
-            /*0 0 16px rgba(0,0,0,0.1);*/
-    /*padding: 15px;*/
-    /*background: rgba(255,255,255,0.5);*/
-    /*margin: 0 0 10px 0;*/
-/*}*/
+.outputValuesText{
+    font-size: 30px;
+}
+
+.targetValueInput{
+    width: 50px;
+}
+
+#onOffCheckbox{
+    margin-left: auto;
+    margin-right: auto;
+    margin-top:15px;
+}

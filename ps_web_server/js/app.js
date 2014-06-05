@@ -17,10 +17,10 @@ window.voltageChartOptions = {
     scaleLineWidth : 1,  //Number - Pixel width of the scale line
     scaleShowLabels : true,  //Boolean - Whether to show labels on the scale
     scaleLabel : "<%=value%>", //Interpolated JS string - can access value
-    scaleFontFamily : "'Arial'", //String - Scale label font declaration for the scale label
-    scaleFontSize : 12,  //Number - Scale label font size in pixels
-    scaleFontStyle : "normal",  //String - Scale label font weight style
-    scaleFontColor : "#666",  //String - Scale label font colour
+    scaleFontFamily : "'Arial'", //String - Scale label fonts declaration for the scale label
+    scaleFontSize : 12,  //Number - Scale label fonts size in pixels
+    scaleFontStyle : "normal",  //String - Scale label fonts weight style
+    scaleFontColor : "#666",  //String - Scale label fonts colour
     scaleShowGridLines : true,  ///Boolean - Whether grid lines are shown across the chart
     scaleGridLineColor : "rgba(0,0,0,.05)", //String - Colour of the grid lines
     scaleGridLineWidth : 1, //Number - Width of the grid lines
@@ -47,10 +47,10 @@ window.currentChartOptions = {
     scaleLineWidth : 1,  //Number - Pixel width of the scale line
     scaleShowLabels : true,  //Boolean - Whether to show labels on the scale
     scaleLabel : "<%=value%>", //Interpolated JS string - can access value
-    scaleFontFamily : "'Arial'", //String - Scale label font declaration for the scale label
-    scaleFontSize : 12,  //Number - Scale label font size in pixels
-    scaleFontStyle : "normal",  //String - Scale label font weight style
-    scaleFontColor : "#666",  //String - Scale label font colour
+    scaleFontFamily : "'Arial'", //String - Scale label fonts declaration for the scale label
+    scaleFontSize : 12,  //Number - Scale label fonts size in pixels
+    scaleFontStyle : "normal",  //String - Scale label fonts weight style
+    scaleFontColor : "#666",  //String - Scale label fonts colour
     scaleShowGridLines : true,  ///Boolean - Whether grid lines are shown across the chart
     scaleGridLineColor : "rgba(0,0,0,.05)", //String - Colour of the grid lines
     scaleGridLineWidth : 1, //Number - Width of the grid lines
@@ -70,23 +70,22 @@ window.currentChartOptions = {
 
 var voltage_data = "";
 var current_data = "";
+window.onOffCheckboxChanging = false;
 
 var updateChart = function() {
-    var containerWidth = jQuery(".graphs").width();
-    var containerHeight = jQuery(".graphs").height();
-    var graphTitleHeight = jQuery(".graphTitle").height();
-    containerHeight = containerHeight - (2 * graphTitleHeight);
+    var graphHeight = ($(window).height() - 60 - $("#onOffCheckbox").height()) / 2.0;
+    var graphWidth = $(window).width() - $(".statusValues").width() - 10;
 
     // Draw the voltage chart
-    var ctx = $('#voltageChart').get(0).getContext("2d");
-    ctx.canvas.width = containerWidth;
-    ctx.canvas.height = containerHeight/2;
+    var ctx = $('#voltageGraph').get(0).getContext("2d");
+    ctx.canvas.width = graphWidth;
+    ctx.canvas.height = graphHeight;
     new Chart(ctx).Line(voltage_data, window.voltageChartOptions);
 
     // Draw the current chart
-    var ctx = $('#currentChart').get(0).getContext("2d");
-    ctx.canvas.width = containerWidth;
-    ctx.canvas.height = containerHeight/2;
+    var ctx = $('#currentGraph').get(0).getContext("2d");
+    ctx.canvas.width = graphWidth;
+    ctx.canvas.height = graphHeight;
     new Chart(ctx).Line(current_data, window.currentChartOptions);
 }
 
@@ -97,11 +96,13 @@ var updateStatusValues = function(json_reply) {
 //    $("#preRegVoltage").text(json_reply["preRegVoltage"]);
     $("#targetVoltage").text(parseFloat(json_reply["targetVoltage"]).toFixed(1));
     $("#targetCurrent").text(json_reply["targetCurrent"]);
-    $("#outputOn").prop('checked', json_reply["outputOn"]);
+    if (!window.onOffCheckboxChanging)
+    {
+        $("#onOffCheckboxInput").prop('checked', json_reply["outputOn"]);
+    }
 }
 
 var updateValues = function() {
-
     $.ajax( "http://localhost:8080/get_all_values" )
       .done(function(json) {
             var json_object = jQuery.parseJSON(json)
@@ -115,27 +116,57 @@ var updateValues = function() {
             var json_object = jQuery.parseJSON(json)
             updateStatusValues(json_object);
       })
-
 }
 
 $(document).ready(function() {
-    setInterval("updateValues()",200);
+      setInterval("updateValues()",200);
+
+    $('#targetVoltageInput').keydown(function(event) {
+        if (event.keyCode == 13) {
+            setTargetVoltageValue();
+            return false;
+         }
+    });
+
+    $('#targetCurrentInput').keydown(function(event) {
+        if (event.keyCode == 13) {
+            setTargetCurrentValue();
+            return false;
+         }
+    });
 
     $("#setTargetVoltage").click(function() {
-        $.post("http://localhost:8080/set_target_voltage", { voltage: $("#targetVoltageInput").val()});
+        setTargetVoltageValue();
     });
 
     $("#setTargetCurrent").click(function() {
-      $.post("http://localhost:8080/set_target_current", { current: $("#targetCurrentInput").val()});
+        setTargetCurrentValue();
     });
 
-    $( "#outputOn" ).change(function() {
+    $( "#onOffCheckboxInput").change(function() {
+        window.onOffCheckboxChanging = true;
         if ($(this).is(':checked')) {
-            $.post("http://localhost:8080/turn_on");
+            $.post("http://localhost:8080/turn_on")
         } else {
-            $.post("http://localhost:8080/turn_off");
+            $.post("http://localhost:8080/turn_off")
         }
     });
+
+     // Runs when the css3 animation is finished on the on/off button
+     $('.onoffswitch-switch').on('webkitTransitionEnd otransitionend oTransitionEnd msTransitionEnd transitionend',
+    function(e) {
+        window.onOffCheckboxChanging = false;
+    });
 })
+
+var setTargetVoltageValue = function() {
+    $.post("http://localhost:8080/set_target_voltage", { voltage: $("#targetVoltageInput").val()});
+}
+
+var setTargetCurrentValue = function() {
+    $.post("http://localhost:8080/set_target_current", { current: $("#targetCurrentInput").val()});
+}
+
+
 
 

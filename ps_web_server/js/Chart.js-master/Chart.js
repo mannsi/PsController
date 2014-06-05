@@ -386,7 +386,7 @@ window.Chart = function(context){
 
 		function calculateDrawingSizes(){
 			maxSize = (Min([width,height])/2);
-			//Remove whatever is larger - the font size or line width.
+			//Remove whatever is larger - the fonts size or line width.
 			
 			maxSize -= Max([config.scaleFontSize*0.5,config.scaleLineWidth*0.5]);
 			
@@ -416,7 +416,7 @@ window.Chart = function(context){
 					ctx.textAlign = "center";
 					ctx.font = config.scaleFontStyle + " " + config.scaleFontSize + "px " + config.scaleFontFamily;
  					var label =  calculatedScale.labels[i];
-					//If the backdrop object is within the font object
+					//If the backdrop object is within the fonts object
 					if (config.scaleShowLabelBackdrop){
 						var textWidth = ctx.measureText(label).width;
 						ctx.fillStyle = config.scaleBackdropColor;
@@ -985,7 +985,7 @@ window.Chart = function(context){
 			labelHeight = config.scaleFontSize;
 			
 			maxSize -= labelHeight;
-			//Set 5 pixels greater than the font size to allow for a little padding from the X axis.
+			//Set 5 pixels greater than the fonts size to allow for a little padding from the X axis.
 			
 			scaleHeight = maxSize;
 			
@@ -1189,7 +1189,7 @@ window.Chart = function(context){
 			labelHeight = config.scaleFontSize;
 			
 			maxSize -= labelHeight;
-			//Set 5 pixels greater than the font size to allow for a little padding from the X axis.
+			//Set 5 pixels greater than the fonts size to allow for a little padding from the X axis.
 			
 			scaleHeight = maxSize;
 			

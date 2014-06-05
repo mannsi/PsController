@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <link href="css/fonts.css" rel="stylesheet">
     <link href="css/app.css" rel="stylesheet">
-    <!--<link href="css/simple_web_buttons.css" rel="stylesheet">-->
+    <link href="css/switch_button.css" rel="stylesheet">
+    <link href="css/set_button.css" rel="stylesheet">
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.0/jquery.min.js"></script>
     <script src="js/Chart.js-master/Chart.js"></script>
     <script src="js/app.js"></script>
@@ -10,34 +12,51 @@
 </head>
 <body>
 <div class="main-content">
-    <div class="values">
-        <div class="Title">Status</div>
-        Output voltage: <span id="outputVoltage">xx.xx</span> V <br/>
-        Output current: <span id="outputCurrent">yyyy</span> mA <br/>
-        Input voltage: <span id="inputVoltage">xx.xx</span> V <br/>
-        <!--Prereg voltage: <span id="preRegVoltage">xx.xx</span> V <br/>-->
-        <!--Output on: <input id="outputOn" type="checkbox"><br/>-->
-        Target voltage: <span id="targetVoltage">xx.xx</span> V <br/>
-        Target current: <span id="targetCurrent">yyyy</span> mA <br/>
-
-        <div class="Title">Set</div>
-        Target voltage: <input id="targetVoltageInput" type="number" value="xx.xx"> <label>V</label>
-        <a id="setTargetVoltage" href="#" class="button black">Set</a> <br/>
-        Target current: <input id="targetCurrentInput" type="number" value="yyyy"> <label>mA</label>
-        <a id="setTargetCurrent" href="#" class="button black">Set</a>
-    </div>
-
-    <div class="graphs">
-        <div id="voltageGraphContainer" class="ChartContainer">
-            <div class="graphTitle">Voltage</div>
-            <canvas id="voltageChart" class="LineChart"></canvas>
+    <div id="voltage">
+        <div class="statusValues">
+            <div class="statusTitle">Voltage</div>
+            <div class="outputValues">
+                <span id="outputVoltage"></span> <span class="outputValuesText">V</span>
+            </div>
+            <div  class="targetValues">
+                <span id="targetVoltage"></span> <span class="targetValuesText">V Target</span>
+                <br/>
+                <input type="number" id="targetVoltageInput" class="targetValueInput">
+                <a id="setTargetVoltage" class="button_example" href="#">Set</a>
+            </div>
         </div>
-        <hr>
-        <div id="currentGraphContainer" class="ChartContainer">
-            <div class="graphTitle">Current</div>
-            <canvas id="currentChart" class="LineChart"></canvas>
+        <div class="graphContainer">
+            <canvas id="voltageGraph" class="lineChart"></canvas>
         </div>
     </div>
+    <hr>
+    <div id="current">
+        <div class="statusValues">
+            <div class="statusTitle">Current</div>
+            <div class="outputValues">
+                <span id="outputCurrent"></span>
+                <span class="outputValuesText">mA</span>
+            </div>
+            <div  class="targetValues">
+                <span id="targetCurrent"></span> <span class="targetValuesText">mA Target</span>
+                <br/>
+                <input type="number" id="targetCurrentInput" class="targetValueInput">
+                <a id="setTargetCurrent" class="button_example" href="#">Set</a>
+            </div>
+        </div>
+        <div class="graphContainer">
+            <canvas id="currentGraph" class="LineChart"></canvas>
+        </div>
+    </div>
+
+    <div id="onOffCheckbox" class="onoffswitch">
+        <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="onOffCheckboxInput" checked>
+        <label class="onoffswitch-label" for="onOffCheckboxInput">
+        <span class="onoffswitch-inner"></span>
+        <span class="onoffswitch-switch"></span>
+    </label>
 </div>
+</div>
+
 </body>
 </html>

@@ -15,11 +15,7 @@ class Wrapper:
         self._logHandlersAdded = False
         self._set_logging(logging.DEBUG)
         self._hardware_interface = ProtocolFactory().get_protocol("usb")
-        self._hardware_interface.connect()
-        if self.connected():
-            self._hardware_interface.start_streaming()
-            self._initialize_streaming_values()
-            self._start_fetching_stream_values()
+        self._initialize_values()
 
     def set_voltage(self, voltage: float):
         """
@@ -37,21 +33,13 @@ class Wrapper:
             return
         self._hardware_interface.set_target_current(current)
 
-    def get_values(self) -> DeviceValues:
-        """
-        Returns the current device values of the PS201. Raises a serial.Serial exception if not connected
-        """
-        if not self._hardware_interface.connect():
-            return
-        return self._hardware_interface.get_all_values()
-
     def get_current_json(self) -> str:
         """
         Get a JSON object that represents the current device state
         """
         if not self._hardware_interface.connect():
             return ""
-        all_values = self.get_values()
+        all_values = self._hardware_interface.get_all_values()
 
         current_values_dict = dict()
         current_values_dict["outputVoltage"] = all_values.output_voltage
@@ -95,25 +83,18 @@ class Wrapper:
     def connected(self):
         return self._hardware_interface.connected()
 
+    def start_streaming(self):
+        self._hardware_interface.start_streaming()
+        self._start_fetching_stream_values()
+
     def _add_all_values_to_json(self, all_values: DeviceValues):
         """
-        Add values to dict. Also make sure only 1000 items are in each list to avoid memory overflow
+        Remove the first value from dicts and add the new values to the back of the lists
         """
-        self._all_values_dict["voltage"]["datasets"][0]["data"].append(all_values.target_voltage)
-        self._all_values_dict["voltage"]["labels"].append("")
-        self._all_values_dict["current"]["datasets"][0]["data"].append(all_values.target_current)
-        self._all_values_dict["current"]["labels"].append("")
-
-
-        items_to_store = 1000
-        number_of_items = len(self._all_values_dict["voltage"]["datasets"][0]["data"])
-        if number_of_items > items_to_store:
-            self._all_values_dict["voltage"]["datasets"][0]["data"] =\
-                self._all_values_dict["voltage"]["datasets"][0]["data"][number_of_items - items_to_store:]
-            self._all_values_dict["voltage"]["labels"] = self._all_values_dict["voltage"]["labels"][number_of_items - items_to_store:]
-            self._all_values_dict["current"]["datasets"][0]["data"] = \
-                self._all_values_dict["current"]["datasets"][0]["data"][number_of_items - items_to_store:]
-            self._all_values_dict["current"]["labels"] = self._all_values_dict["current"]["labels"][number_of_items - items_to_store:]
+        self._all_values_dict["voltage"]["datasets"][0]["data"].pop(0)
+        self._all_values_dict["current"]["datasets"][0]["data"].pop(0)
+        self._all_values_dict["voltage"]["datasets"][0]["data"].append(all_values.output_voltage)
+        self._all_values_dict["current"]["datasets"][0]["data"].append(all_values.output_current)
 
     def _set_logging(self, log_level):
         if not self._logHandlersAdded:
@@ -133,7 +114,7 @@ class Wrapper:
 
         logging.getLogger(Constants.LOGGER_NAME).setLevel(log_level)
 
-    def _initialize_streaming_values(self):
+    def _initialize_values(self):
         self._all_values_dict["voltage"] = dict()
         self._all_values_dict["voltage"]["datasets"] = [{"data": []}]
         self._all_values_dict["voltage"]["datasets"][0]["strokeColor"] = "rgba(151,232,40,1)"
@@ -142,6 +123,13 @@ class Wrapper:
         self._all_values_dict["current"]["datasets"] = [{"data": []}]
         self._all_values_dict["current"]["datasets"][0]["strokeColor"] = "rgba(48,200,227,1)"
         self._all_values_dict["current"]["labels"] = []
+
+        # TODO Try setting 
+        for x in range(150):
+            self._all_values_dict["voltage"]["datasets"][0]["data"].append(0)
+            self._all_values_dict["voltage"]["labels"].append("")
+            self._all_values_dict["current"]["datasets"][0]["data"].append(0)
+            self._all_values_dict["current"]["labels"].append("")
 
     def _start_fetching_stream_values(self):
         # Start a timer that adds to the list of values
@@ -156,17 +144,29 @@ class Wrapper:
 
 class MockWrapper(Wrapper):
     def __init__(self):
+        self._voltage = 0
+        self._current = 0
         super().__init__()
-        self.voltage = 1
-        self.current = 0
 
-    def get_values(self) -> DeviceValues:
+    def get_current_json(self) -> str:
         mock_values = DeviceValues()
-        mock_values.target_voltage = self.voltage
-        mock_values.target_current = self.current
-        self.voltage += 0.1
-        self.current += 1
-        return mock_values
+        mock_values.output_is_on = False
+        mock_values.target_voltage = self._voltage
+        mock_values.target_current = self._current
+        self._voltage += 0.1
+        self._current += 1
+        super()._add_all_values_to_json(mock_values)
+
+        current_values_dict = dict()
+        current_values_dict["outputVoltage"] = mock_values.output_voltage
+        current_values_dict["outputCurrent"] = mock_values.output_current
+        current_values_dict["inputVoltage"] = mock_values.input_voltage
+        current_values_dict["preRegVoltage"] = mock_values.pre_reg_voltage
+        current_values_dict["targetVoltage"] = mock_values.target_voltage
+        current_values_dict["targetCurrent"] = mock_values.target_current
+        current_values_dict["outputOn"] = mock_values.output_is_on
+
+        return json.dumps(current_values_dict)
 
     def set_device_on(self):
         pass
@@ -175,13 +175,16 @@ class MockWrapper(Wrapper):
         pass
 
     def set_current(self, current: float):
-        pass
+        self._current = current
 
     def set_voltage(self, voltage: int):
-        pass
+        self._voltage = voltage
 
     def connect(self):
         return True
 
     def connected(self):
         return True
+
+    def start_streaming(self):
+        pass

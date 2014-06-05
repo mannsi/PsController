@@ -5,7 +5,10 @@ from ps_web_server.Wrapper import Wrapper, MockWrapper
 
 class HelloWorld(object):
     def __init__(self):
-        self._wrapper = Wrapper()
+        self._wrapper = MockWrapper()
+        self._wrapper.connect()
+        if self._wrapper.connected():
+            self._wrapper.start_streaming()
 
     @cherrypy.expose
     def index(self):
@@ -77,6 +80,10 @@ conf = {
     '/js': {
         'tools.staticdir.on': True,
         'tools.staticdir.dir': './js'
+    },
+    '/fonts': {
+        'tools.staticdir.on': True,
+        'tools.staticdir.dir': './fonts'
     }
 }
 

@@ -69,7 +69,7 @@ class UsbProtocol(BaseProtocolInterface):
 
         # Start a timer that reads from the streaming_values_buffer
         self.streaming_scheduler.start()
-        self.streaming_scheduler.add_interval_job(self._get_stream_values, seconds=0.5, args=[])
+        self.streaming_scheduler.add_interval_job(self._get_stream_values, seconds=0.2, args=[])
 
     def get_current_streaming_values(self) -> DeviceValues:
         with self._stream_lock:
