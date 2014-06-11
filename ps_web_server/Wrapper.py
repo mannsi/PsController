@@ -1,19 +1,17 @@
 import json
-import logging
 from apscheduler.scheduler import Scheduler
 
-
 from ps_controller.protocol.ProtocolFactory import ProtocolFactory
-from ps_controller.Constants import Constants
 from ps_controller.DeviceValues import DeviceValues
 
 
 class Wrapper:
     def __init__(self):
+        self._number_of_values_on_graphs = 150
+        self._seconds_between_fetching_graph_values = 0.5
         self._stream_values_polling = Scheduler()
         self._all_values_dict = dict()
         self._logHandlersAdded = False
-        self._set_logging(logging.DEBUG)
         self._hardware_interface = ProtocolFactory().get_protocol("usb")
         self._initialize_values()
 
@@ -39,7 +37,7 @@ class Wrapper:
         """
         if not self._hardware_interface.connect():
             return ""
-        all_values = self._hardware_interface.get_all_values()
+        all_values = self._hardware_interface.get_current_stream_values()
 
         current_values_dict = dict()
         current_values_dict["outputVoltage"] = all_values.output_voltage
@@ -49,6 +47,7 @@ class Wrapper:
         current_values_dict["targetVoltage"] = all_values.target_voltage
         current_values_dict["targetCurrent"] = all_values.target_current
         current_values_dict["outputOn"] = all_values.output_is_on
+        current_values_dict["connected"] = self._hardware_interface.connected()
 
         return json.dumps(current_values_dict)
 
@@ -96,24 +95,6 @@ class Wrapper:
         self._all_values_dict["voltage"]["datasets"][0]["data"].append(all_values.output_voltage)
         self._all_values_dict["current"]["datasets"][0]["data"].append(all_values.output_current)
 
-    def _set_logging(self, log_level):
-        if not self._logHandlersAdded:
-            logger = logging.getLogger(Constants.LOGGER_NAME)
-            logger.propagate = False
-            formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-            file_handler = logging.FileHandler("PS201.log")
-            file_handler.setFormatter(formatter)
-            logger.addHandler(file_handler)
-            print_handler = logging.StreamHandler()
-            print_handler.setFormatter(formatter)
-            logger.addHandler(print_handler)
-            self._logHandlersAdded = True
-
-            # Overwhelming when this is set to debug
-            logging.getLogger("apscheduler.scheduler").setLevel(logging.ERROR)
-
-        logging.getLogger(Constants.LOGGER_NAME).setLevel(log_level)
-
     def _initialize_values(self):
         self._all_values_dict["voltage"] = dict()
         self._all_values_dict["voltage"]["datasets"] = [{"data": []}]
@@ -124,8 +105,7 @@ class Wrapper:
         self._all_values_dict["current"]["datasets"][0]["strokeColor"] = "rgba(48,200,227,1)"
         self._all_values_dict["current"]["labels"] = []
 
-        # TODO Try setting 
-        for x in range(150):
+        for x in range(self._number_of_values_on_graphs):
             self._all_values_dict["voltage"]["datasets"][0]["data"].append(0)
             self._all_values_dict["voltage"]["labels"].append("")
             self._all_values_dict["current"]["datasets"][0]["data"].append(0)
@@ -134,7 +114,8 @@ class Wrapper:
     def _start_fetching_stream_values(self):
         # Start a timer that adds to the list of values
         self._stream_values_polling.start()
-        self._stream_values_polling.add_interval_job(self._add_to_stream_values, seconds=0.1, args=[])
+        self._stream_values_polling.add_interval_job(
+            self._add_to_stream_values, seconds=self._seconds_between_fetching_graph_values, args=[])
 
     def _add_to_stream_values(self):
         streaming_values = self._hardware_interface.get_current_streaming_values()

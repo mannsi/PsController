@@ -52,6 +52,12 @@ class BaseProtocolInterface:
         """
         raise NotImplementedError()
 
+    def stop_streaming(self):
+        """
+        Sends signal to device to stop streaming values
+        """
+        raise NotImplementedError()
+
     def get_current_streaming_values(self) -> DeviceValues:
         """
         Read accumulated streaming values from device

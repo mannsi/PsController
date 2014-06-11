@@ -5,19 +5,21 @@ import serial
 from .BaseConnectionInterface import BaseConnectionInterface
 import ps_controller.utilities.OsHelper as osHelper
 from ..Constants import Constants
+from ..logging.CustomLoggerInterface import CustomLoggerInterface
+from ..Commands import HandshakeCommand
 
 
 class UsbConnection(BaseConnectionInterface):
     def __init__(
             self,
-            logger,
+            logger: CustomLoggerInterface,
             serial_link_generator,
-            id_message,
+            id_message: bytes,
             device_verification_func):
         """
         Parameters
         ----------
-        logger : object
+        logger
             A logger object that the connection can use to log events
         serial_link_generator : serial.Serial interface generator
             A function that returns a interface that implements serial.Serial. Allows mocking
@@ -36,9 +38,6 @@ class UsbConnection(BaseConnectionInterface):
         self._connected = False
 
     def connect(self):
-        """
-        Tries to connect to a PS201 via USB. Returns a bool indicating if connecting was successful
-        """
         if self._connected:
             return True
         available_ports = self._available_connections()
@@ -51,21 +50,14 @@ class UsbConnection(BaseConnectionInterface):
         return self._connected
 
     def disconnect(self):
-        """
-        Disconnects from the currently connected PS201.
-        """
         self._base_connection.close()
 
     def connected(self):
-        """
-        Returns a bool value indicating if connected to PS201
-        """
         return self._connected
 
     def clear_buffer(self):
         try:
-            if self.connected():
-                self._base_connection.flushInput()
+            self._base_connection.flushInput()
         except Exception as e:
             self._connected = False
             raise e
@@ -106,11 +98,11 @@ class UsbConnection(BaseConnectionInterface):
                 tmp_connection.open()
                 available.append(tmp_connection.port)
                 tmp_connection.close()
-            except serial.SerialException as e:
+            except serial.SerialException:
                 pass
         return available
 
-    def _send_to_device(self, serial_connection, data: bytearray):
+    def _send_to_device(self, serial_connection, data: bytes):
         serial_connection.write(data)
 
     def _read_device_response(self, serial_connection: serial.Serial) -> bytes:
@@ -139,8 +131,9 @@ class UsbConnection(BaseConnectionInterface):
             tmp_connection.port = usb_port
             tmp_connection.open()
             self._send_to_device(tmp_connection, self._id_message)
-            device_response = self._read_device_response(tmp_connection)
+            self._logger.log_sending(command=HandshakeCommand(), data=usb_port, serial=bytes(self._id_message))
+            device_serial_response = self._read_device_response(tmp_connection)
             tmp_connection.close()
-            return self._device_verification_func(device_response, usb_port)
+            return self._device_verification_func(device_serial_response, usb_port)
         except Exception as e:
             return False

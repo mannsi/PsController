@@ -1,11 +1,16 @@
 import cherrypy
 import os, os.path
 from ps_web_server.Wrapper import Wrapper, MockWrapper
+import json
 
+# TODO prófa að blokka UI þegar ekki tekst að tengjast og fara þá að polla device um tengingu á 1 sec fresti
+# TODO Stress testa. Ákveða hvað á að gerast þegar shit hits the fans. Þá blokkar UI
+# TODO Document-a web API fyrir device. Þannig get ég kannski bara gleymt python kóða integration !
+# TODO búa til leiðbeiningar fyrir Frissa svo hann geti sett þetta upp með website
 
 class HelloWorld(object):
     def __init__(self):
-        self._wrapper = MockWrapper()
+        self._wrapper = Wrapper()
         self._wrapper.connect()
         if self._wrapper.connected():
             self._wrapper.start_streaming()
@@ -63,6 +68,13 @@ class HelloWorld(object):
     def turn_off(self):
         try:
             self._wrapper.set_device_off()
+        except:
+            pass
+
+    @cherrypy.expose
+    def connected(self):
+        try:
+            return json.dumps(self._wrapper.connected())
         except:
             pass
 

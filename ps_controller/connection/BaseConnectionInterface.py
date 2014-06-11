@@ -1,11 +1,20 @@
 class BaseConnectionInterface:
     def connect(self) -> bool:
+        """
+        Tries to connect to a PS201 via USB. Returns a bool indicating if connecting was successful
+        """
         raise NotImplementedError()
 
     def disconnect(self):
+        """
+        Disconnects from the currently connected PS201.
+        """
         raise NotImplementedError()
 
     def connected(self) -> bool:
+        """
+        Returns a bool value indicating if connected to PS201
+        """
         raise NotImplementedError()
 
     def clear_buffer(self):

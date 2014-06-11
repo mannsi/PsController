@@ -1,15 +1,14 @@
-from ..Constants import Constants
 from ..connection.UsbConnection import UsbConnection
 from ..data_mapping.UsbDataMapping import UsbDataMapping
 from .BaseConnectionInterface import BaseConnectionInterface
 from ..Commands import AcknowledgementCommand, HandshakeCommand
-
+from ..logging.CustomLoggerInterface import CustomLoggerInterface
 
 import serial
 
 
 class ConnectionFactory:
-    def __init__(self, logger):
+    def __init__(self, logger: CustomLoggerInterface):
         self._usb_connection = None
         self.logger = logger
 
@@ -36,17 +35,19 @@ class ConnectionFactory:
         ack_string = "Received ACKNOWLEDGE response on port " + port
         try:
             if not serial_response:
-                self.logger.info(not_ack_string)
+                self.logger.log_info(not_ack_string)
                 return False
             response = UsbDataMapping.from_serial(serial_response)
+            response.data = port
+            self.logger.log_receiving(response)
             return_value = response.command == AcknowledgementCommand()
             if return_value:
-                self.logger.info(ack_string)
+                self.logger.log_info(ack_string)
             else:
-                self.logger.info(not_ack_string)
+                self.logger.log_info(not_ack_string)
             return return_value
-        except Exception as e:
-            self.logger.info(not_ack_string)
+        except:
+            self.logger.log_info(not_ack_string)
             return False
 
     def _get_serial_link(self) -> serial.Serial:
