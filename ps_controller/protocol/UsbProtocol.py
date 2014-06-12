@@ -4,6 +4,7 @@ from apscheduler.scheduler import Scheduler
 
 from .BaseProtocolInterface import BaseProtocolInterface
 from ..data_mapping.UsbDataMapping import UsbDataMapping
+from ps_controller import SerialException
 from ..utilities.Crc import Crc16
 from ..DeviceResponse import DeviceResponse
 from ..Commands import *
@@ -124,7 +125,7 @@ class UsbProtocol(BaseProtocolInterface):
             self.logger.log_sending(command, data, self.readable_serial_from_serial(serial_data_to_device))
             self._connection.set(serial_data_to_device)
             acknowledgement = self._get_response_from_device()
-            self._verify_acknowledgement(acknowledgement, command, data='')
+            self._verify_acknowledgement(acknowledgement, command)
             if expect_response:
                 response = self._get_response_from_device()
                 self._verify_crc_code(response)
@@ -142,19 +143,19 @@ class UsbProtocol(BaseProtocolInterface):
         return ''.join(UsbDataMapping.from_serial(serial).readable_serial)
 
     def _verify_crc_code(self, response: DeviceResponse):
-        crc_return_value = Crc16._verify_crc_code(response)
+        crc_return_value = Crc16.verify_crc_code(response)
         if crc_return_value:
             error_message = ("Unexpected crc code from device. Got " +
                              crc_return_value[0] + " but expected " + crc_return_value[1])
             self.logger.log_error(error_message)
 
-    def _verify_acknowledgement(self, acknowledgement_response: DeviceResponse, command: BaseCommand, data):
+    def _verify_acknowledgement(self, acknowledgement_response: DeviceResponse, command: BaseCommand):
         if not acknowledgement_response:
-            self.logger.log_error("No response from device when sending '" + command.readable() + "'")
+            raise SerialException("No response from device when sending '" + command.readable() + "'")
         elif acknowledgement_response.command == NotAcknowledgementCommand():
             log_string = ("Received 'NOT ACKNOWLEDGE' from device."
                           "Command sent to device: '" + command.readable() + "'")
-            self.logger.log_error(log_string, command, data, acknowledgement_response)
+            self.logger.log_error(log_string)
         elif acknowledgement_response.command != AcknowledgementCommand():
             log_string = ("Received neither 'ACKNOWLEDGE' nor 'NOT ACKNOWLEDGE' from device. "
                           "Command sent to device: '" + command.readable() + "'."

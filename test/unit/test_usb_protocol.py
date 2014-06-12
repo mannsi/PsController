@@ -1,16 +1,16 @@
 import unittest
 from ps_controller import SerialException
 from ps_controller.protocol.UsbProtocol import UsbProtocol
-from ps_controller.Constants import Constants
 from ps_controller.DeviceValues import DeviceValues
 from ps_controller.data_mapping.UsbDataMapping import UsbDataMapping
 from ps_controller.Commands import *
+from test.Mocks import MockConnection, MockLogger
 
 
 class TestUsbConnection(unittest.TestCase):
     def setUp(self):
-        self._connection_mock = ConnectionMock()
-        self._test_protocol = UsbProtocol(self._connection_mock)
+        self._connection_mock = MockConnection()
+        self._test_protocol = UsbProtocol(self._connection_mock, MockLogger())
 
     def test_connecting_works(self):
         self._test_protocol.connect()
@@ -98,47 +98,3 @@ def get_binary_data_for_all_values():
 
     return (all_values, serial_data_with_ack)
 
-
-class ConnectionMock:
-    def __init__(self):
-        self._connected = False
-        self._binary_data_in_buffer = []
-
-    def connect(self):
-        self._connected = True
-
-    def disconnect(self):
-        self._connected = False
-
-    def connected(self):
-        return self._connected
-
-    def clear_buffer(self):
-        raise NotImplementedError()
-
-    def get(self):
-        if not self._connected:
-            raise SerialException("Trying to set when closed connection")
-
-        if not self._binary_data_in_buffer:
-            return bytearray()
-
-        line = bytearray()
-        start_count = 0
-        while True:
-            c = self._binary_data_in_buffer.pop(0)
-            line.append(c)
-
-            if c == Constants.START:
-                start_count += 1
-            if start_count == 2:
-                break
-
-        return line
-
-    def set(self, sending_data):
-        if not self._connected:
-            raise SerialException("Trying to set when closed connection")
-
-    def set_binary_buffer_data(self, data):
-        self._binary_data_in_buffer = data

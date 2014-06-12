@@ -85,7 +85,8 @@ class PsDebugger:
             first_string = "To PS201"
         else:
             first_string = "From PS201"
-        self.last_message_id = self.tree.insert('', 'end', '', text=first_string, values=(command.readable(), data, serial, message))
+        self.last_message_id = self.tree.insert('', 'end', '', text=first_string,
+                                                values=(command.readable(), data, serial, message))
 
     def add_error_message(self, error_message: str):
         self.tree.insert('', 'end', text='', values=('', '', '', error_message))

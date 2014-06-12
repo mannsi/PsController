@@ -1,5 +1,5 @@
 import cherrypy
-import os, os.path
+import os
 from ps_web_server.Wrapper import Wrapper, MockWrapper
 import json
 
@@ -7,6 +7,7 @@ import json
 # TODO Stress testa. Ákveða hvað á að gerast þegar shit hits the fans. Þá blokkar UI
 # TODO Document-a web API fyrir device. Þannig get ég kannski bara gleymt python kóða integration !
 # TODO búa til leiðbeiningar fyrir Frissa svo hann geti sett þetta upp með website
+
 
 class HelloWorld(object):
     def __init__(self):
@@ -53,7 +54,7 @@ class HelloWorld(object):
     @cherrypy.expose
     def set_target_current(self, current):
         try:
-            self._wrapper.set_current(float(current))
+            self._wrapper.set_current(int(current))
         except Exception:
             pass
 

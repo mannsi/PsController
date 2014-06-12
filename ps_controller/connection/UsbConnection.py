@@ -3,6 +3,7 @@ import glob
 import serial
 
 from .BaseConnectionInterface import BaseConnectionInterface
+from ps_controller import SerialException
 import ps_controller.utilities.OsHelper as osHelper
 from ..Constants import Constants
 from ..logging.CustomLoggerInterface import CustomLoggerInterface
@@ -50,6 +51,7 @@ class UsbConnection(BaseConnectionInterface):
         return self._connected
 
     def disconnect(self):
+        self._connected = False
         self._base_connection.close()
 
     def connected(self):
@@ -60,7 +62,7 @@ class UsbConnection(BaseConnectionInterface):
             self._base_connection.flushInput()
         except Exception as e:
             self._connected = False
-            raise e
+            raise SerialException(e)
 
     def get(self):
         try:
@@ -70,14 +72,14 @@ class UsbConnection(BaseConnectionInterface):
             return serial_response
         except Exception as e:
             self._connected = False
-            raise e
+            raise SerialException(e)
 
     def set(self, sending_data):
         try:
             self._send_to_device(self._base_connection, sending_data)
         except Exception as e:
             self._connected = False
-            raise e
+            raise SerialException(e)
 
     def _available_connections(self) -> list:
         """Get available usb ports"""
@@ -131,7 +133,7 @@ class UsbConnection(BaseConnectionInterface):
             tmp_connection.port = usb_port
             tmp_connection.open()
             self._send_to_device(tmp_connection, self._id_message)
-            self._logger.log_sending(command=HandshakeCommand(), data=usb_port, serial=bytes(self._id_message))
+            self._logger.log_sending(command=HandshakeCommand(), data=usb_port, serial=self._id_message)
             device_serial_response = self._read_device_response(tmp_connection)
             tmp_connection.close()
             return self._device_verification_func(device_serial_response, usb_port)

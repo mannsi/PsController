@@ -10,7 +10,7 @@ _characters_to_escape = [Constants.START, Constants.ESCAPE, Constants.NEW_LINE, 
 
 class Crc16:
     @classmethod
-    def _verify_crc_code(cls, response: DeviceResponse):
+    def verify_crc_code(cls, response: DeviceResponse):
         """
         Verifies that the crc code in the response is the same as we expect given the response data.
         Returns: None if crc codes match, otherwise tuple containing (received_crc_code, expected_crc_code).

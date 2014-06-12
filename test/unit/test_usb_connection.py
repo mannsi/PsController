@@ -1,15 +1,15 @@
 import unittest
-from ps_controller.connection.UsbConnection import UsbConnection
 from ps_controller.Constants import Constants
+from ps_controller.connection.UsbConnection import UsbConnection
 from ps_controller import SerialException
+from test.Mocks import MockSerialLink, MockLogger
 
 
 class TestUsbConnection(unittest.TestCase):
-
     def setUp(self):
         self._test_connection = UsbConnection(
-            logger=None,
-            serial_link_generator=lambda: SerialLinkMock(baud_rate=9600, timeout=0.1),
+            logger=MockLogger(),
+            serial_link_generator=lambda: MockSerialLink(baud_rate=9600, timeout=0.1),
             id_message=None,
             device_verification_func=lambda serial_response, port: True)
 
@@ -89,78 +89,39 @@ class TestUsbConnection(unittest.TestCase):
 if __name__ == '__main__':
     unittest.main()
 
-
 def _get_normal_single_data_package():
-        """
-        Gets a normal single data package. This is the normal case
-        where the data starts and ends with a START char
-        """
-        byte_array = bytearray()
-        byte_array.append(Constants.START)
-        byte_array.append(1)
-        byte_array.append(2)
-        byte_array.append(3)
-        byte_array.append(4)
-        byte_array.append(5)
-        byte_array.append(Constants.START)
-        return byte_array
-
+            """
+            Gets a normal single data package. This is the normal case
+            where the data starts and ends with a START char
+            """
+            byte_array = bytearray()
+            byte_array.append(Constants.START)
+            byte_array.append(1)
+            byte_array.append(2)
+            byte_array.append(3)
+            byte_array.append(4)
+            byte_array.append(5)
+            byte_array.append(Constants.START)
+            return byte_array
 
 def _get_normal_double_data_package():
-        """
-        Gets a normal double data package. This is the normal case
-        where the data starts and ends with a START char for both packages
-        """
-        byte_array = bytearray()
-        byte_array.append(Constants.START)
-        byte_array.append(1)
-        byte_array.append(2)
-        byte_array.append(3)
-        byte_array.append(4)
-        byte_array.append(5)
-        byte_array.append(Constants.START)
-        byte_array.append(Constants.START)
-        byte_array.append(1)
-        byte_array.append(2)
-        byte_array.append(3)
-        byte_array.append(4)
-        byte_array.append(5)
-        byte_array.append(Constants.START)
-        return byte_array
-
-
-class SerialLinkMock:
-    def __init__(self, baud_rate, timeout):
-        self._port = None
-        self._baud_rate = baud_rate
-        self._timeout = timeout
-
-        self._connected = False
-        self._return_read_value = []
-
-    def open(self):
-        self._connected = True
-
-    def close(self):
-        self._connected = False
-
-    def isOpen(self):
-        return self._connected
-
-    def flushInput(self):
-        self._return_read_value = []
-
-    def read(self, number_of_bytes):
-        if not self._connected:
-            raise SerialException("Trying to read when connection is closed")
-        return_value = self._return_read_value[0:number_of_bytes]
-        self._return_read_value = self._return_read_value[number_of_bytes:]
-        return return_value
-
-    def write(self, data):
-        if not self._connected:
-            raise SerialException("Trying to write when connection is closed")
-        pass
-
-    def set_read_return_value(self, data):
-        self._return_read_value = data
+    """
+    Gets a normal double data package. This is the normal case
+    where the data starts and ends with a START char for both packages
+    """
+    byte_array = bytearray()
+    byte_array.append(Constants.START)
+    byte_array.append(1)
+    byte_array.append(2)
+    byte_array.append(3)
+    byte_array.append(4)
+    byte_array.append(5)
+    byte_array.append(Constants.START)
+    byte_array.append(Constants.START)
+    byte_array.append(1)
+    byte_array.append(2)
+    byte_array.append(3)
+    byte_array.append(4)
+    byte_array.append(5)
+    byte_array.append(Constants.START)
+    return byte_array
