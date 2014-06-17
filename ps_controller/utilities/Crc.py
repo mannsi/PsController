@@ -4,6 +4,8 @@ from ..Constants import Constants
 from ..DeviceResponse import DeviceResponse
 from ..Commands import BaseCommand
 
+# TODO move this functionality outside because entire serial communication needs to be escaped
+# TODO move the entire escaping functionality into data
 # Int values of characters to escape
 _characters_to_escape = [Constants.START, Constants.ESCAPE, Constants.NEW_LINE, Constants.RETURN]
 
@@ -31,11 +33,13 @@ class Crc16:
         crc16.update(bytes([len(binary_data)]))
         crc16.update(binary_data)
         unescaped_hex_crc = cls._get_hex_list_from_int(crc16.crcValue)
-        escaped_int_crc = cls._escape_crc_code(unescaped_hex_crc, _characters_to_escape)
-        return escaped_int_crc
+        bla =  [int(unescapedCrcByte, 16) for unescapedCrcByte in unescaped_hex_crc]
+        return bla
+        # escaped_int_crc = cls._escape_crc_code(unescaped_hex_crc, _characters_to_escape)
+        # return escaped_int_crc
 
     @staticmethod
-    def _escape_crc_code(unescaped_crc_code: list, values_to_escape: list):
+    def _escape_crc_code(unescaped_crc_code: list, values_to_escape: list) -> list:
         """
         Escapes a list of hex crc values and returns an int crc list
 

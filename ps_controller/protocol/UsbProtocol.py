@@ -146,7 +146,9 @@ class UsbProtocol(BaseProtocolInterface):
         crc_return_value = Crc16.verify_crc_code(response)
         if crc_return_value:
             error_message = ("Unexpected crc code from device. Got " +
-                             crc_return_value[0] + " but expected " + crc_return_value[1])
+                             ','.join(str(x) for x in crc_return_value[0]) +
+                             " but expected " +
+                             ','.join(str(x) for x in crc_return_value[1]))
             self.logger.log_error(error_message)
 
     def _verify_acknowledgement(self, acknowledgement_response: DeviceResponse, command: BaseCommand):

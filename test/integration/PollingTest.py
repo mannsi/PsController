@@ -16,7 +16,7 @@ Preconditions:
 import time
 import unittest
 
-from ps_web_server.Wrapper import Wrapper
+from ps_web_server.PsWebWrapper import Wrapper
 from ps_controller.DeviceValues import DeviceValues
 
 

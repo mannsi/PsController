@@ -107,10 +107,10 @@ class UsbConnection(BaseConnectionInterface):
     def _send_to_device(self, serial_connection, data: bytes):
         serial_connection.write(data)
 
-    def _read_device_response(self, serial_connection: serial.Serial) -> bytes:
+    def _read_device_response(self, serial_connection: serial.Serial) -> bytearray:
         return self._read_line(serial_connection)
 
-    def _read_line(self, serial_connection: serial.Serial) -> bytes:
+    def _read_line(self, serial_connection: serial.Serial) -> bytearray:
         """Custom readLine method to avoid end of line char issues"""
         line = bytearray()
         start_count = 0
@@ -125,7 +125,7 @@ class UsbConnection(BaseConnectionInterface):
                 start_count += 1
             if start_count == 2:
                 break
-        return bytes(line)
+        return line
 
     def _device_on_port(self, usb_port):
         try:

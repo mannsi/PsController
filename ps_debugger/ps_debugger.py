@@ -14,23 +14,44 @@ class PsDebugger:
         self.set_c_button = None
         self.set_c_entry = None
         self.get_all_button = None
+        self.switch_output_on_button = None
+        self.switch_output_off_button = None
         self.connected_label = None
         self.tree = None
+        self.operation_frame = None
         self.last_message_id = None
         custom_logger = DebugLogger(ps_debugger=self)
         self._hardware_interface = ProtocolFactory(logger=custom_logger).get_protocol("usb")
         root = Tk()
-        self.add_ui(root)
+        root.geometry("1500x500")
+        content_frame = Frame(root)
+        content_frame.grid_columnconfigure(0, weight=1)
+        content_frame.grid_rowconfigure(1, weight=1)
+        self.add_ui(content_frame)
+        content_frame.pack(fill=BOTH, expand=True)
         root.mainloop()
 
-    def add_ui(self, tk_root: Tk):
-        self.add_communications(tk_root)
-        self.add_operations(tk_root)
-        self.add_connect_panel(tk_root)
+    def add_ui(self, root: Frame):
+        Label(root, text="Communication").grid(row=0, column=0)
+        tree = self.get_communication_tree(root)
+        tree.grid(row=1, column=0, sticky=(NSEW))
+        s = Scrollbar(root, orient=VERTICAL, command=self.tree.yview)
+        self.tree.configure(yscrollcommand=s.set)
+        s.grid(column=0, row=1, sticky=(N, S, E))
 
-    def add_communications(self, tk_root: Tk):
-        Label(tk_root, text="Communication").grid(row=0, column=0)
-        self.tree = Treeview(tk_root)
+        Label(root, text="Operations").grid(row=0, column=1)
+        operation_frame = self.get_operation_frame(root)
+        operation_frame.grid(row=1, column=1, sticky=N)
+
+        self.connected_label = Label(root, text="")
+        self.connected_label.grid(row=2, column=0)
+        Button(root, text="Connect", command=self.button_connect_click).grid(row=2, column=1, sticky=(SE))
+
+        # self.add_operations(parent)
+        # self.add_connect_panel(parent)
+
+    def get_communication_tree(self, parent: Frame):
+        self.tree = Treeview(parent)
         self.tree.column('#0', width=100, anchor='w')
         self.tree.heading('#0', text='Direction', anchor='w')
         self.tree['columns'] = ('command', 'data', 'serial', 'message')
@@ -42,38 +63,41 @@ class PsDebugger:
         self.tree.heading('serial', text='Serial', anchor='w')
         self.tree.column('message', width=500, anchor='w')
         self.tree.heading('message', text='Message', anchor='w')
+        return self.tree
 
-        self.tree.grid(column=0, row=1, rowspan=3)
-        s = Scrollbar(tk_root, orient=VERTICAL, command=self.tree.yview)
-        self.tree.configure(yscrollcommand=s.set)
-        s.grid(column=1, row=1, rowspan=3, sticky=(N, S))
+    def get_operation_frame(self, parent: Frame):
+        operation_frame = Frame(parent)
 
-    def add_operations(self, tk_root: Tk):
-        Label(tk_root, text="Operations").grid(row=0, column=2, columnspan=2)
         self.set_v_button = Button(
-            tk_root, text="Set V",
-            command=lambda: self.run_operation(ReadTargetCurrentCommand(), self.set_v_entry.get()))
-        self.set_v_button.grid(row=1, column=2)
-        self.set_v_entry = Entry(tk_root)
-        self.set_v_entry.grid(row=1, column=3)
+            operation_frame, text="Set V",
+            command=lambda: self.run_operation(ReadTargetVoltageCommand(), self.set_v_entry.get()))
+        self.set_v_button.grid(row=0, column=0, sticky=(EW))
+        self.set_v_entry = Entry(operation_frame)
+        self.set_v_entry.grid(row=0, column=1)
 
         self.set_c_button = Button(
-            tk_root, text="Set C",
+            operation_frame, text="Set C",
             command=lambda: self.run_operation(ReadTargetCurrentCommand(), self.set_c_entry.get()))
-        self.set_c_button.grid(row=2, column=2)
-        self.set_c_entry = Entry(tk_root)
-        self.set_c_entry.grid(row=2, column=3)
+        self.set_c_button.grid(row=1, column=0, sticky=(EW))
+        self.set_c_entry = Entry(operation_frame)
+        self.set_c_entry.grid(row=1, column=1)
 
         self.get_all_button = Button(
-            tk_root, text="Get all",
+            operation_frame, text="Get all",
             command=lambda: self.run_operation(WriteAllValuesCommand(), ''))
-        self.get_all_button.grid(row=3, column=2)
+        self.get_all_button.grid(row=2, column=0, sticky=(EW))
 
-    def add_connect_panel(self, tk_root: Tk):
-        (num_rows, num_columns) = tk_root.grid_size()
-        self.connected_label = Label(tk_root, text="")
-        self.connected_label.grid(row=num_rows, column=0, sticky=W)
-        Button(tk_root, text="Connect", command=self.button_connect_click).grid(row=num_rows, column=3, sticky=E)
+        self.switch_output_on_button = Button(
+            operation_frame, text="Output on",
+            command=lambda: self.run_operation(TurnOnOutputCommand(), ''))
+        self.switch_output_on_button.grid(row=3, column=0,  sticky=(EW))
+
+        self.switch_output_off_button = Button(
+            operation_frame, text="Output off",
+            command=lambda: self.run_operation(TurnOffOutputCommand(), ''))
+        self.switch_output_off_button.grid(row=4, column=0,  sticky=(EW))
+
+        return operation_frame
 
     def button_connect_click(self):
         self._hardware_interface.connect()
@@ -85,14 +109,14 @@ class PsDebugger:
             first_string = "To PS201"
         else:
             first_string = "From PS201"
-        self.last_message_id = self.tree.insert('', 'end', '', text=first_string,
+        self.last_message_id = self.tree.insert('', 0, '', text=first_string,
                                                 values=(command.readable(), data, serial, message))
 
     def add_error_message(self, error_message: str):
-        self.tree.insert('', 'end', text='', values=('', '', '', error_message))
+        self.tree.insert('', 0, text='', values=('', '', '', error_message))
 
     def add_info_message(self, info_message: str):
-        self.tree.insert('', 'end', text='', values=('', '', '', info_message))
+        self.tree.insert('', 0, text='', values=('', '', '', info_message))
 
     def run_operation(self, command: BaseCommand, data):
         try:

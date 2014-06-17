@@ -1,15 +1,16 @@
 import cherrypy
 import os
-from ps_web_server.Wrapper import Wrapper, MockWrapper
+from ps_web_server.PsWebWrapper import Wrapper, MockWrapper
 import json
 
-# TODO prófa að blokka UI þegar ekki tekst að tengjast og fara þá að polla device um tengingu á 1 sec fresti
-# TODO Stress testa. Ákveða hvað á að gerast þegar shit hits the fans. Þá blokkar UI
+# TODO Test connect disconnect when website is running
+# TODO Test using relative paths in javascript. /get_all_values and not localhost:8080/get_all_values
 # TODO Document-a web API fyrir device. Þannig get ég kannski bara gleymt python kóða integration !
+# TODO Check if installing still works
 # TODO búa til leiðbeiningar fyrir Frissa svo hann geti sett þetta upp með website
 
 
-class HelloWorld(object):
+class PsWebServer(object):
     def __init__(self):
         self._wrapper = Wrapper()
         self._wrapper.connect()
@@ -18,12 +19,10 @@ class HelloWorld(object):
 
     @cherrypy.expose
     def index(self):
+        self._wrapper.connect()
         if self._wrapper.connected():
-            file_to_show = 'index.html'
-        else:
-            file_to_show = 'NoDeviceFound.html'
-
-        index_file_path = os.path.join(os.path.dirname(__file__), file_to_show)
+            self._wrapper.start_streaming()
+        index_file_path = os.path.join(os.path.dirname(__file__), 'index.html')
         with open(index_file_path)as f:
             index = f.read()
         return index
@@ -80,7 +79,6 @@ class HelloWorld(object):
             pass
 
 
-pat = os.path.abspath(os.getcwd())
 conf = {
     '/': {
         'tools.sessions.on': True,
@@ -100,4 +98,10 @@ conf = {
     }
 }
 
-cherrypy.quickstart(HelloWorld(), '/', conf)
+
+def run():
+    cherrypy.quickstart(PsWebServer(), '/', conf)
+
+
+if __name__ == "__main__":
+    run()

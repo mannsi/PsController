@@ -69,7 +69,7 @@ var setTargetCurrentValue = function() {
 }
 
 var blockUI = function(){
-    $.blockUI({ message: '<h1>Unable to connect to device. Retrying ...</h1>' });
+    $.blockUI({ message: '<h1>Unable to connect to device. Refresh to retry</h1>' });
 }
 
 var unblockUI = function(){
@@ -83,7 +83,7 @@ var start = function(){
                 setInterval("updateChartsAndValues()",200);
             }
             else{
-                alert("json_connected false");
+                blockUI();
             }
       })
 

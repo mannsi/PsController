@@ -5,6 +5,8 @@ from ..DeviceResponse import DeviceResponse
 from ps_controller import SerialException
 import ps_controller.Commands as Commands
 
+# Int values of characters to escape
+_characters_to_escape = [Constants.START, Constants.ESCAPE, Constants.NEW_LINE, Constants.RETURN]
 
 class UsbDataMapping():
     @classmethod
@@ -17,7 +19,6 @@ class UsbDataMapping():
         data_length = len(binary_data)
 
         byte_array = bytearray()
-        byte_array.append(Constants.START)
         byte_array.append(command.int_value())
         byte_array.append(data_length)
         if data_length > 0:
@@ -25,12 +26,18 @@ class UsbDataMapping():
                 byte_array.append(intData)
         for crc in crc_code:
             byte_array.append(crc)
+
+        # Escape everything except the first and last Constant.START chars. 
+        byte_array = cls._escape_byte_array(byte_array)
+
+        byte_array.insert(0, Constants.START)
         byte_array.append(Constants.START)
         return byte_array
 
     @classmethod
     def from_serial(cls, serial_value: bytearray) -> DeviceResponse:
         """Converts a bytes object into a device response object"""
+        serial_value = cls._un_escape_byte_array(serial_value)
         response = DeviceResponse()
         try:
             response.start = serial_value[0]
@@ -69,16 +76,16 @@ class UsbDataMapping():
             split_values = [float(x) for x in data.split(";")]
         except ValueError as e:
             return None
-        if len(split_values) < 7:
+        if len(split_values) < 6:
             return None
         device_values = DeviceValues()
         device_values.output_voltage = split_values[0]
         device_values.output_current = split_values[1]
         device_values.target_voltage = split_values[2]
         device_values.target_current = split_values[3]
-        device_values.pre_reg_voltage = split_values[4]
-        device_values.input_voltage = split_values[5]
-        device_values.output_is_on = bool(split_values[6])
+        # device_values.pre_reg_voltage = split_values[4]
+        # device_values.input_voltage = split_values[5]
+        device_values.output_is_on = bool(split_values[4])
         return device_values
 
     @classmethod
@@ -101,3 +108,23 @@ class UsbDataMapping():
         if len(hex_string) == 1:
             hex_string = '0' + hex_string
         return hex_string
+
+    @staticmethod
+    def _un_escape_byte_array(byte_array: bytearray) -> bytearray:
+        for item in byte_array[:]:
+            if item == Constants.ESCAPE:
+                next_index_to_escape = byte_array.index(item)
+                byte_array.remove(item)
+                byte_array[next_index_to_escape] = Constants.FLIP ^ byte_array[next_index_to_escape]
+        return byte_array
+
+    @staticmethod
+    def _escape_byte_array(byte_array: bytearray) -> bytearray:
+        escaped_array = bytearray()
+        for item in byte_array:
+            if item in _characters_to_escape:
+                escaped_array.append(Constants.ESCAPE)
+                escaped_array.append(Constants.FLIP ^ item)
+            else:
+                escaped_array.append(item)
+        return escaped_array
