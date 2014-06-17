@@ -27,9 +27,9 @@ class Crc16:
         crc16.update(bytes_command)
         crc16.update(bytes([len(binary_data)]))
         crc16.update(binary_data)
-        unescaped_hex_crc = cls._get_hex_list_from_int(crc16.crcValue)
-        bla =  [int(unescapedCrcByte, 16) for unescapedCrcByte in unescaped_hex_crc]
-        return bla
+        hex_crc = cls._get_hex_list_from_int(crc16.crcValue)
+        int_crc =  [int(unescapedCrcByte, 16) for unescapedCrcByte in hex_crc]
+        return int_crc
 
     @staticmethod
     def _get_hex_list_from_int(int_value: int) -> list:
