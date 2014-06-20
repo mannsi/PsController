@@ -32,8 +32,10 @@ class CustomLogger(CustomLoggerInterface):
     def log_info(self, info_message):
         self.logger.log(logging.INFO, info_message)
 
-    def log_sending(self, command, data: str, serial: bytearray):
-        self.logger.log(logging.DEBUG, "Command " + command.readable() + " sent to device with data " + data)
+    def log_sending(self, command, data, serial: bytearray):
+        log_string = "Command " + command.readable() + " sent to device with data " + str(data)
+        self.logger.log(logging.DEBUG, log_string)
 
     def log_receiving(self, device_response):
-        self.logger.log(logging.DEBUG, "Data received from device: %s" % ''.join(device_response.readable_serial))
+        log_string = "Data received from device:" + ''.join(device_response.readable_serial)
+        self.logger.log(logging.DEBUG, log_string)

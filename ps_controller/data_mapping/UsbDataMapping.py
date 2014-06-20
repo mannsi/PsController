@@ -76,7 +76,7 @@ class UsbDataMapping():
             split_values = [float(x) for x in data.split(";")]
         except ValueError as e:
             return None
-        if len(split_values) < 6:
+        if len(split_values) < 5:
             return None
         device_values = DeviceValues()
         device_values.output_voltage = split_values[0]

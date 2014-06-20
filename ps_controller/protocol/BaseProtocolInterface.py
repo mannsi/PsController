@@ -46,21 +46,21 @@ class BaseProtocolInterface:
         """
         raise NotImplementedError()
 
-    def start_streaming(self):
+    def start_auto_update(self):
         """
-        Sends signal to device to start streaming values when they change
-        """
-        raise NotImplementedError()
-
-    def stop_streaming(self):
-        """
-        Sends signal to device to stop streaming values
+        Start periodically getting data from device
         """
         raise NotImplementedError()
 
-    def get_current_streaming_values(self) -> DeviceValues:
+    def stop_auto_update(self):
         """
-        Read accumulated streaming values from device
+        Stop periodically getting data from device
+        """
+        raise NotImplementedError()
+
+    def get_auto_update_values(self) -> DeviceValues:
+        """
+        Get latest fetched auto update values from device
         """
         raise NotImplementedError()
 

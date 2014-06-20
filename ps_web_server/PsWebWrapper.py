@@ -9,19 +9,19 @@ class Wrapper:
     def __init__(self):
         self._number_of_values_on_graphs = 150
         self._seconds_between_fetching_graph_values = 0.5
-        self._stream_values_polling = Scheduler()
+        self._read_auto_values_scheduler = Scheduler()
         self._all_values_dict = dict()
         self._logHandlersAdded = False
         self._hardware_interface = ProtocolFactory().get_protocol("usb")
         self._initialize_values()
 
-    def set_voltage(self, voltage: float):
+    def set_voltage(self, voltage: int):
         """
         Set the voltage value of the connected PS201. Raises a serial.Serial exception if not connected
         """
         if not self._hardware_interface.connect():
             return
-        self._hardware_interface.set_target_voltage(voltage)
+        self._hardware_interface.set_target_voltage(voltage*1000)
 
     def set_current(self, current: int):
         """
@@ -37,14 +37,14 @@ class Wrapper:
         """
         if not self._hardware_interface.connect():
             return ""
-        all_values = self._hardware_interface.get_current_stream_values()
+        all_values = self._hardware_interface.get_auto_update_values()
 
         current_values_dict = dict()
-        current_values_dict["outputVoltage"] = all_values.output_voltage
+        current_values_dict["outputVoltage"] = round(all_values.output_voltage / 1000, 1)
         current_values_dict["outputCurrent"] = all_values.output_current
         current_values_dict["inputVoltage"] = all_values.input_voltage
         current_values_dict["preRegVoltage"] = all_values.pre_reg_voltage
-        current_values_dict["targetVoltage"] = all_values.target_voltage
+        current_values_dict["targetVoltage"] = round(all_values.target_voltage / 1000, 1)
         current_values_dict["targetCurrent"] = all_values.target_current
         current_values_dict["outputOn"] = all_values.output_is_on
         current_values_dict["connected"] = self._hardware_interface.connected()
@@ -82,9 +82,9 @@ class Wrapper:
     def connected(self):
         return self._hardware_interface.connected()
 
-    def start_streaming(self):
-        self._hardware_interface.start_streaming()
-        self._start_fetching_stream_values()
+    def start_auto_updating_values(self):
+        self._hardware_interface.start_auto_update()
+        self._start_fetching_values()
 
     def _add_all_values_to_json(self, all_values: DeviceValues):
         """
@@ -92,7 +92,7 @@ class Wrapper:
         """
         self._all_values_dict["voltage"]["datasets"][0]["data"].pop(0)
         self._all_values_dict["current"]["datasets"][0]["data"].pop(0)
-        self._all_values_dict["voltage"]["datasets"][0]["data"].append(all_values.output_voltage)
+        self._all_values_dict["voltage"]["datasets"][0]["data"].append(round(all_values.output_voltage / 1000, 1))
         self._all_values_dict["current"]["datasets"][0]["data"].append(all_values.output_current)
 
     def _initialize_values(self):
@@ -111,16 +111,19 @@ class Wrapper:
             self._all_values_dict["current"]["datasets"][0]["data"].append(0)
             self._all_values_dict["current"]["labels"].append("")
 
-    def _start_fetching_stream_values(self):
+    def _start_fetching_values(self):
         # Start a timer that adds to the list of values
-        self._stream_values_polling.start()
-        self._stream_values_polling.add_interval_job(
-            self._add_to_stream_values, seconds=self._seconds_between_fetching_graph_values, args=[])
+        self._read_auto_values_scheduler.start()
+        self._read_auto_values_scheduler.add_interval_job(
+            self._add_to_auto_update_values, seconds=self._seconds_between_fetching_graph_values, args=[])
 
-    def _add_to_stream_values(self):
-        streaming_values = self._hardware_interface.get_current_streaming_values()
-        if streaming_values:
-            self._add_all_values_to_json(streaming_values)
+    def _add_to_auto_update_values(self):
+        """
+        Fetches auto update values from device and adds them to the json dic
+        """
+        latest_values = self._hardware_interface.get_auto_update_values()
+        if latest_values:
+            self._add_all_values_to_json(latest_values)
 
 
 class MockWrapper(Wrapper):
@@ -167,5 +170,5 @@ class MockWrapper(Wrapper):
     def connected(self):
         return True
 
-    def start_streaming(self):
+    def start_auto_updating_values(self):
         pass

@@ -5,23 +5,20 @@ import json
 
 # TODO Test connect disconnect when website is running
 # TODO Test using relative paths in javascript. /get_all_values and not localhost:8080/get_all_values
-# TODO Document-a web API fyrir device. Þannig get ég kannski bara gleymt python kóða integration !
 # TODO Check if installing still works
-# TODO búa til leiðbeiningar fyrir Frissa svo hann geti sett þetta upp með website
+# TODO Update readme documentation
 
 
 class PsWebServer(object):
     def __init__(self):
         self._wrapper = Wrapper()
         self._wrapper.connect()
-        if self._wrapper.connected():
-            self._wrapper.start_streaming()
 
     @cherrypy.expose
     def index(self):
         self._wrapper.connect()
         if self._wrapper.connected():
-            self._wrapper.start_streaming()
+            self._wrapper.start_auto_updating_values()
         index_file_path = os.path.join(os.path.dirname(__file__), 'index.html')
         with open(index_file_path)as f:
             index = f.read()

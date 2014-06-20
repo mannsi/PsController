@@ -1,4 +1,5 @@
 import threading
+import time
 
 from apscheduler.scheduler import Scheduler
 
@@ -22,10 +23,10 @@ class UsbProtocol(BaseProtocolInterface):
         """
         super(UsbProtocol, self).__init__(connection)
         self.logger = logger
-        self.streaming_scheduler = Scheduler()
+        self.auto_update_scheduler = Scheduler()
         self._transactionLock = threading.Lock()
-        self._current_stream_values = DeviceValues()
-        self._stream_lock = threading.Lock()
+        self._auto_update_values = DeviceValues()
+        self._auto_update_lock = threading.Lock()
 
     def connect(self):
         self._connection.connect()
@@ -37,85 +38,54 @@ class UsbProtocol(BaseProtocolInterface):
     def connected(self):
         return self._connection.connected()
 
-    def get_current_stream_values(self):
-        return self._current_stream_values
+    def get_auto_updateFst_values(self):
+        return self._auto_update_values
 
     def get_all_values(self):
         response = self._send_to_device(WriteAllValuesCommand(), expect_response=True, data='')
         return UsbDataMapping.from_data_to_device_values(response.data)
 
     def set_target_voltage(self, voltage):
-        with self._stream_lock:
-            self._current_stream_values.target_voltage = voltage
+        if voltage > 20000:
+            return
+        with self._auto_update_lock:
+            self._auto_update_values.target_voltage = voltage
         self._send_to_device(ReadTargetVoltageCommand(), expect_response=False, data=voltage)
 
     def set_target_current(self, current):
-        with self._stream_lock:
-            self._current_stream_values.target_current = current
+        if current > 1000:
+            return
+        with self._auto_update_lock:
+            self._auto_update_values.target_current = current
         self._send_to_device(ReadTargetCurrentCommand(), expect_response=False, data=current)
 
     def set_device_is_on(self, is_on):
-        with self._stream_lock:
-            self._current_stream_values.output_is_on = is_on
+        with self._auto_update_lock:
+            self._auto_update_values.output_is_on = is_on
             if is_on:
                 command = TurnOnOutputCommand()
             else:
                 command = TurnOffOutputCommand()
         self._send_to_device(command, expect_response=False, data='')
 
-    def start_streaming(self):
-        # Send start streaming command to device
-        self._send_to_device(StartStreamCommand(), False, '')
+    def start_auto_update(self):
+        # Start a timer that periodically reads from device
+        self.auto_update_scheduler.start()
+        self.auto_update_scheduler.add_interval_job(self._get_auto_update_values, seconds=0.2, args=[])
 
-        # Initialize streaming values. Streaming update only updates this value
-        with self._stream_lock:
-            self._current_stream_values = self.get_all_values()
+    def stop_auto_update(self):
+        self.auto_update_scheduler.shutdown(wait=False)
 
-        # Start a timer that reads from the streaming_values_buffer
-        self.streaming_scheduler.start()
-        self.streaming_scheduler.add_interval_job(self._get_stream_values, seconds=0.2, args=[])
+    def get_auto_update_values(self) -> DeviceValues:
+        with self._auto_update_lock:
+            return self._auto_update_values
 
-    def stop_streaming(self):
-        self._send_to_device(StopStreamCommand(), False, '')
-        self.streaming_scheduler.shutdown(wait=False)
-        self._connection.clear_buffer()
-
-    def get_current_streaming_values(self) -> DeviceValues:
-        with self._stream_lock:
-            return self._current_stream_values
-
-    def _get_stream_values(self):
+    def _get_auto_update_values(self):
         try:
-            response_list = []
-            with self._transactionLock:
-                response = self._get_response_from_device()
-                while response:
-                    response_list.append(response)
-                    response = self._get_response_from_device()
-            if not response_list:
-                return
-            [self._verify_crc_code(response) for response in response_list]
-
-            with self._stream_lock:
-                for response in response_list:
-                    command = response.command
-                    value = response.data
-                    if command == WriteOutputVoltageCommand():
-                        self._current_stream_values.output_voltage = float(value)
-                    elif command == WriteOutputCurrentCommand():
-                        self._current_stream_values.output_current = int(value)
-                    elif command == WritePreRegVoltageCommand():
-                        self._current_stream_values.pre_reg_voltage = float(value)
-                    elif command == WriteTargetVoltageCommand():
-                        self._current_stream_values.target_voltage = float(value)
-                    elif command == WriteTargetCurrentCommand():
-                        self._current_stream_values.target_current = int(value)
-                    elif command == WriteIsOutputOnCommand():
-                        self._current_stream_values.output_is_on = bool(value)
-                    elif command == WriteInputVoltageCommand():
-                        self._current_stream_values.input_voltage = float(value)
+            with self._auto_update_lock:
+                self._auto_update_values = self.get_all_values()
         except Exception as e:
-            self.logger.log_error("Error getting stream values. Message: " + str(e))
+            self.logger.log_error("Error getting auto update values. Message: " + str(e))
 
     def _send_to_device(self, command: BaseCommand, expect_response: bool, data) -> DeviceResponse:
         with self._transactionLock:

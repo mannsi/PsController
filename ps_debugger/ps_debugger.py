@@ -130,10 +130,6 @@ class PsDebugger:
                 self._hardware_interface.set_device_is_on(True)
             elif command == TurnOffOutputCommand():
                 self._hardware_interface.set_device_is_on(False)
-            elif command == StartStreamCommand():
-                self._hardware_interface.start_streaming()
-            elif command == StopStreamCommand():
-                self._hardware_interface.stop_streaming()
         except Exception as e:
             self.add_error_message("ERROR. Message: " + str(e))
 
