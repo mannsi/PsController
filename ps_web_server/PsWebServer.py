@@ -3,7 +3,6 @@ import os
 from ps_web_server.PsWebWrapper import Wrapper, MockWrapper
 import json
 
-# TODO Test connect disconnect when website is running
 # TODO Test using relative paths in javascript. /get_all_values and not localhost:8080/get_all_values
 # TODO Check if installing still works
 # TODO Update readme documentation

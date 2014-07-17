@@ -19,6 +19,7 @@ window.deviceConnected = false;
 //}
 
 var newCurrentValues = function(reply) {
+    var bla = document.location.href;
     var newIsConnected = (reply !== "");
     var oldIsConnected = window.deviceConnected;
     if (oldIsConnected && !newIsConnected){
@@ -47,18 +48,18 @@ var updateDisplayValues = function(json_reply){
 }
 
 var updateValues = function() {
-    $.ajax( "http://localhost:8080/get_values" )
+    $.ajax( document.location.href + "get_values" )
       .done(function(reply) {
             newCurrentValues(reply);
       })
 }
 
 var setTargetVoltageValue = function() {
-    $.post("http://localhost:8080/set_target_voltage", { voltage: $("#targetVoltageInput").val()});
+    $.post(document.location.href + "set_target_voltage", { voltage: $("#targetVoltageInput").val()});
 }
 
 var setTargetCurrentValue = function() {
-    $.post("http://localhost:8080/set_target_current", { current: $("#targetCurrentInput").val()});
+    $.post(document.location.href + "set_target_current", { current: $("#targetCurrentInput").val()});
 }
 
 var blockUI = function(){
@@ -70,7 +71,7 @@ var unblockUI = function(){
 }
 
 var start = function(){
-    $.ajax( "http://localhost:8080/connected" )
+    $.ajax( document.location.href + "connected" )
       .done(function(json_connected) {
             if (!jQuery.parseJSON(json_connected)){
                 blockUI();
@@ -108,9 +109,9 @@ $(document).ready(function() {
     $( "#onOffCheckboxInput").change(function() {
         window.onOffCheckboxChanging = true;
         if ($(this).is(':checked')) {
-            $.post("http://localhost:8080/turn_on")
+            $.post(document.location.href + "turn_on")
         } else {
-            $.post("http://localhost:8080/turn_off")
+            $.post(document.location.href + "turn_off")
         }
     });
 
