@@ -123,9 +123,9 @@ class PsDebugger:
             if command == WriteAllValuesCommand():
                 self._hardware_interface.get_all_values()
             elif command == ReadTargetVoltageCommand():
-                self._hardware_interface.set_target_voltage(data)
+                self._hardware_interface.set_target_voltage(int(data))
             elif command == ReadTargetCurrentCommand():
-                self._hardware_interface.set_target_current(data)
+                self._hardware_interface.set_target_current(int(data))
             elif command == TurnOnOutputCommand():
                 self._hardware_interface.set_device_is_on(True)
             elif command == TurnOffOutputCommand():

@@ -17,33 +17,23 @@ class PsWebServer(object):
     @cherrypy.expose
     def index(self):
         self._wrapper.connect()
-        if self._wrapper.connected():
-            self._wrapper.start_auto_updating_values()
         index_file_path = os.path.join(os.path.dirname(__file__), 'index.html')
         with open(index_file_path)as f:
             index = f.read()
         return index
 
     @cherrypy.expose
-    def get_current_values(self):
+    def get_values(self):
         try:
             json_current_values = self._wrapper.get_current_json()
             return json_current_values
-        except:
-            return ""
-
-    @cherrypy.expose
-    def get_all_values(self):
-        try:
-            json_all_values = self._wrapper.get_all_json()
-            return json_all_values
-        except:
+        except Exception as e:
             return ""
 
     @cherrypy.expose
     def set_target_voltage(self, voltage):
         try:
-            self._wrapper.set_voltage(int(voltage))
+            self._wrapper.set_voltage(float(voltage))
         except Exception:
             pass
 

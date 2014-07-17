@@ -9,10 +9,6 @@ body {
     display: flex;
 }
 
-.graphContainer {
-	flex: 1;
-    background-color: white;
-}
 .statusValues {
     border-width: 1px;
     border-right-style: solid;

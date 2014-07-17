@@ -1,7 +1,4 @@
 import threading
-import time
-
-from apscheduler.scheduler import Scheduler
 
 from .BaseProtocolInterface import BaseProtocolInterface
 from ..data_mapping.UsbDataMapping import UsbDataMapping
@@ -23,10 +20,7 @@ class UsbProtocol(BaseProtocolInterface):
         """
         super(UsbProtocol, self).__init__(connection)
         self.logger = logger
-        self.auto_update_scheduler = Scheduler()
         self._transactionLock = threading.Lock()
-        self._auto_update_values = DeviceValues()
-        self._auto_update_lock = threading.Lock()
 
     def connect(self):
         self._connection.connect()
@@ -38,54 +32,26 @@ class UsbProtocol(BaseProtocolInterface):
     def connected(self):
         return self._connection.connected()
 
-    def get_auto_updateFst_values(self):
-        return self._auto_update_values
-
-    def get_all_values(self):
+    def get_all_values(self) -> DeviceValues:
         response = self._send_to_device(WriteAllValuesCommand(), expect_response=True, data='')
         return UsbDataMapping.from_data_to_device_values(response.data)
 
     def set_target_voltage(self, voltage):
         if voltage > 20000:
             return
-        with self._auto_update_lock:
-            self._auto_update_values.target_voltage = voltage
         self._send_to_device(ReadTargetVoltageCommand(), expect_response=False, data=voltage)
 
     def set_target_current(self, current):
         if current > 1000:
             return
-        with self._auto_update_lock:
-            self._auto_update_values.target_current = current
         self._send_to_device(ReadTargetCurrentCommand(), expect_response=False, data=current)
 
     def set_device_is_on(self, is_on):
-        with self._auto_update_lock:
-            self._auto_update_values.output_is_on = is_on
-            if is_on:
-                command = TurnOnOutputCommand()
-            else:
-                command = TurnOffOutputCommand()
+        if is_on:
+            command = TurnOnOutputCommand()
+        else:
+            command = TurnOffOutputCommand()
         self._send_to_device(command, expect_response=False, data='')
-
-    def start_auto_update(self):
-        # Start a timer that periodically reads from device
-        self.auto_update_scheduler.start()
-        self.auto_update_scheduler.add_interval_job(self._get_auto_update_values, seconds=0.2, args=[])
-
-    def stop_auto_update(self):
-        self.auto_update_scheduler.shutdown(wait=False)
-
-    def get_auto_update_values(self) -> DeviceValues:
-        with self._auto_update_lock:
-            return self._auto_update_values
-
-    def _get_auto_update_values(self):
-        try:
-            with self._auto_update_lock:
-                self._auto_update_values = self.get_all_values()
-        except Exception as e:
-            self.logger.log_error("Error getting auto update values. Message: " + str(e))
 
     def _send_to_device(self, command: BaseCommand, expect_response: bool, data) -> DeviceResponse:
         with self._transactionLock:

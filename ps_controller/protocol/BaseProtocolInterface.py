@@ -45,22 +45,3 @@ class BaseProtocolInterface:
         Throws SerialException if not connected
         """
         raise NotImplementedError()
-
-    def start_auto_update(self):
-        """
-        Start periodically getting data from device
-        """
-        raise NotImplementedError()
-
-    def stop_auto_update(self):
-        """
-        Stop periodically getting data from device
-        """
-        raise NotImplementedError()
-
-    def get_auto_update_values(self) -> DeviceValues:
-        """
-        Get latest fetched auto update values from device
-        """
-        raise NotImplementedError()
-

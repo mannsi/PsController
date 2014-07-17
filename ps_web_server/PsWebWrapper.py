@@ -1,5 +1,4 @@
 import json
-from apscheduler.scheduler import Scheduler
 
 from ps_controller.protocol.ProtocolFactory import ProtocolFactory
 from ps_controller.DeviceValues import DeviceValues
@@ -7,15 +6,10 @@ from ps_controller.DeviceValues import DeviceValues
 
 class Wrapper:
     def __init__(self):
-        self._number_of_values_on_graphs = 150
-        self._seconds_between_fetching_graph_values = 0.5
-        self._read_auto_values_scheduler = Scheduler()
-        self._all_values_dict = dict()
         self._logHandlersAdded = False
         self._hardware_interface = ProtocolFactory().get_protocol("usb")
-        self._initialize_values()
 
-    def set_voltage(self, voltage: int):
+    def set_voltage(self, voltage: float):
         """
         Set the voltage value of the connected PS201. Raises a serial.Serial exception if not connected
         """
@@ -37,7 +31,7 @@ class Wrapper:
         """
         if not self._hardware_interface.connect():
             return ""
-        all_values = self._hardware_interface.get_auto_update_values()
+        all_values = self._hardware_interface.get_all_values()
 
         current_values_dict = dict()
         current_values_dict["outputVoltage"] = round(all_values.output_voltage / 1000, 1)
@@ -50,12 +44,6 @@ class Wrapper:
         current_values_dict["connected"] = self._hardware_interface.connected()
 
         return json.dumps(current_values_dict)
-
-    def get_all_json(self) -> str:
-        """
-        Gets a JSON object that represents all device states since start
-        """
-        return json.dumps(self._all_values_dict)
 
     def set_device_on(self):
         """
@@ -82,49 +70,6 @@ class Wrapper:
     def connected(self):
         return self._hardware_interface.connected()
 
-    def start_auto_updating_values(self):
-        self._hardware_interface.start_auto_update()
-        self._start_fetching_values()
-
-    def _add_all_values_to_json(self, all_values: DeviceValues):
-        """
-        Remove the first value from dicts and add the new values to the back of the lists
-        """
-        self._all_values_dict["voltage"]["datasets"][0]["data"].pop(0)
-        self._all_values_dict["current"]["datasets"][0]["data"].pop(0)
-        self._all_values_dict["voltage"]["datasets"][0]["data"].append(round(all_values.output_voltage / 1000, 1))
-        self._all_values_dict["current"]["datasets"][0]["data"].append(all_values.output_current)
-
-    def _initialize_values(self):
-        self._all_values_dict["voltage"] = dict()
-        self._all_values_dict["voltage"]["datasets"] = [{"data": []}]
-        self._all_values_dict["voltage"]["datasets"][0]["strokeColor"] = "rgba(151,232,40,1)"
-        self._all_values_dict["voltage"]["labels"] = []
-        self._all_values_dict["current"] = dict()
-        self._all_values_dict["current"]["datasets"] = [{"data": []}]
-        self._all_values_dict["current"]["datasets"][0]["strokeColor"] = "rgba(48,200,227,1)"
-        self._all_values_dict["current"]["labels"] = []
-
-        for x in range(self._number_of_values_on_graphs):
-            self._all_values_dict["voltage"]["datasets"][0]["data"].append(0)
-            self._all_values_dict["voltage"]["labels"].append("")
-            self._all_values_dict["current"]["datasets"][0]["data"].append(0)
-            self._all_values_dict["current"]["labels"].append("")
-
-    def _start_fetching_values(self):
-        # Start a timer that adds to the list of values
-        self._read_auto_values_scheduler.start()
-        self._read_auto_values_scheduler.add_interval_job(
-            self._add_to_auto_update_values, seconds=self._seconds_between_fetching_graph_values, args=[])
-
-    def _add_to_auto_update_values(self):
-        """
-        Fetches auto update values from device and adds them to the json dic
-        """
-        latest_values = self._hardware_interface.get_auto_update_values()
-        if latest_values:
-            self._add_all_values_to_json(latest_values)
-
 
 class MockWrapper(Wrapper):
     def __init__(self):
@@ -139,7 +84,6 @@ class MockWrapper(Wrapper):
         mock_values.target_current = self._current
         self._voltage += 0.1
         self._current += 1
-        super()._add_all_values_to_json(mock_values)
 
         current_values_dict = dict()
         current_values_dict["outputVoltage"] = mock_values.output_voltage
@@ -169,6 +113,3 @@ class MockWrapper(Wrapper):
 
     def connected(self):
         return True
-
-    def start_auto_updating_values(self):
-        pass

@@ -47,6 +47,7 @@ class UsbConnection(BaseConnectionInterface):
                 self._base_connection.port = port
                 self._base_connection.open()
                 self._connected = self._base_connection.isOpen()
+
                 break
         return self._connected
 
@@ -100,7 +101,7 @@ class UsbConnection(BaseConnectionInterface):
                 tmp_connection.open()
                 available.append(tmp_connection.port)
                 tmp_connection.close()
-            except serial.SerialException:
+            except serial.SerialException as e:
                 pass
         return available
 
