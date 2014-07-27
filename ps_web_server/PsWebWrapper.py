@@ -34,12 +34,11 @@ class Wrapper:
         all_values = self._hardware_interface.get_all_values()
 
         current_values_dict = dict()
-        current_values_dict["outputVoltage"] = round(all_values.output_voltage / 1000, 1)
-        current_values_dict["outputCurrent"] = all_values.output_current
-        current_values_dict["inputVoltage"] = all_values.input_voltage
-        current_values_dict["preRegVoltage"] = all_values.pre_reg_voltage
-        current_values_dict["targetVoltage"] = round(all_values.target_voltage / 1000, 1)
-        current_values_dict["targetCurrent"] = all_values.target_current
+        current_values_dict["outputVoltage_V"] = round(all_values.output_voltage / 1000, 1)
+        current_values_dict["outputCurrent_mA"] = all_values.output_current
+        current_values_dict["inputVoltage_V"] = all_values.input_voltage
+        current_values_dict["targetVoltage_V"] = round(all_values.target_voltage / 1000, 1)
+        current_values_dict["targetCurrent_mA"] = all_values.target_current
         current_values_dict["outputOn"] = all_values.output_is_on
         current_values_dict["connected"] = self._hardware_interface.connected()
 
