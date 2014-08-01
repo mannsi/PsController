@@ -20,10 +20,6 @@ class CustomLogger(CustomLoggerInterface):
         print_handler = logging.StreamHandler()
         print_handler.setFormatter(formatter)
         self.logger.addHandler(print_handler)
-
-        # Overwhelming when this is set to debug
-        logging.getLogger("apscheduler.scheduler").setLevel(logging.ERROR)
-
         self.logger.setLevel(log_level)
 
     def log_error(self, error_message):
