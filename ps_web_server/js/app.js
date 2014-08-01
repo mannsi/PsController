@@ -2,7 +2,7 @@ window.onOffCheckboxChanging = false;
 window.deviceConnected = false;
 
 var newCurrentValues = function(reply) {
-    var bla = document.location.href;
+    var bla = document.location.origin;
     var newIsConnected = (reply !== "");
     var oldIsConnected = window.deviceConnected;
     if (oldIsConnected && !newIsConnected){
@@ -31,18 +31,18 @@ var updateDisplayValues = function(json_reply){
 }
 
 var updateValues = function() {
-    $.ajax( document.location.href + "get_values" )
+    $.ajax( document.location.origin + "/get_values" )
       .done(function(reply) {
             newCurrentValues(reply);
       })
 }
 
 var setTargetVoltageValue = function() {
-    $.post(document.location.href + "set_target_voltage", { voltage: $("#targetVoltageInput").val()});
+    $.post(document.location.origin + "/set_target_voltage", { voltage: $("#targetVoltageInput").val()});
 }
 
 var setTargetCurrentValue = function() {
-    $.post(document.location.href + "set_target_current", { current: $("#targetCurrentInput").val()});
+    $.post(document.location.origin + "/set_target_current", { current: $("#targetCurrentInput").val()});
 }
 
 var blockUI = function(){
@@ -54,7 +54,7 @@ var unblockUI = function(){
 }
 
 var start = function(){
-    $.ajax( document.location.href + "connected" )
+    $.ajax( document.location.origin + "/connected" )
       .done(function(json_connected) {
             if (!jQuery.parseJSON(json_connected)){
                 blockUI();
@@ -92,9 +92,9 @@ $(document).ready(function() {
     $( "#onOffCheckboxInput").change(function() {
         window.onOffCheckboxChanging = true;
         if ($(this).is(':checked')) {
-            $.post(document.location.href + "turn_on")
+            $.post(document.location.origin + "/turn_on")
         } else {
-            $.post(document.location.href + "turn_off")
+            $.post(document.location.origin + "/turn_off")
         }
     });
 

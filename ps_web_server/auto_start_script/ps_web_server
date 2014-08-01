@@ -1,0 +1,5 @@
+#! /bin/sh
+
+ps_controller
+
+exit 0

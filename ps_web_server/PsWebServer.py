@@ -64,7 +64,7 @@ class PsWebServer(object):
 conf = {
     '/': {
         'tools.sessions.on': True,
-        'tools.staticdir.root': os.path.abspath(os.getcwd())
+        'tools.staticdir.root': os.path.split(__file__)[0]
     },
     '/css': {
         'tools.staticdir.on': True,

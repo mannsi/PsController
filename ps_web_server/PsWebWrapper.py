@@ -4,6 +4,7 @@ from ps_controller.protocol.ProtocolFactory import ProtocolFactory
 from ps_controller.DeviceValues import DeviceValues
 
 
+# TODO document
 class Wrapper:
     def __init__(self):
         self._logHandlersAdded = False
