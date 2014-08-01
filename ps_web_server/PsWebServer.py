@@ -2,6 +2,8 @@ import cherrypy
 import os
 from ps_web_server.PsWebWrapper import Wrapper, MockWrapper
 import json
+import signal
+import sys
 
 
 class PsWebServer(object):
@@ -61,10 +63,17 @@ class PsWebServer(object):
             pass
 
 
+# Catch the Ctrl-C interrupt and shut down the cherrypy server
+def signal_handler(signal, frame):
+    cherrypy.engine.exit()
+    sys.exit(0)
+signal.signal(signal.SIGINT, signal_handler)
+
+
 conf = {
     '/': {
         'tools.sessions.on': True,
-        'tools.staticdir.root': os.path.split(__file__)[0]
+        'tools.staticdir.root': os.path.abspath(os.path.split(__file__)[0])
     },
     '/css': {
         'tools.staticdir.on': True,
