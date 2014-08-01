@@ -3,17 +3,23 @@ Ps Controller
 
 What is it?
 ------
-The Ps Controller is a program to control the PS201 adjustable power supply. See http://github.com/mannsi/PS201. 
+The Ps Controller is a local python web server to control the PS201 adjustable power supply. See http://github.com/mannsi/PS201. 
 
 Release date
 ------
 Currently there is no decided release date
 
-Software installation and execution
+Installation
 ------
-The easiest way to install is to run `sudo python3 Software/setup.py`. Note that this will try to download and install python dependencies so a network connection is probably needed (see the setup.py file for dependencies).
-After install you can run the software with `PsController`
-The software uses TkInter so the package python3-tk is required
+The easiest way to install is to run `sudo python3 setup.py`. Note that this will try to download and install python dependencies so a network connection is probably needed (see the setup.py file for dependencies).
+
+Running
+------
+Precondition: Your user needs to belong to the user group 'dialout' to be able to access the usb port of the PS201.
+
+1. Connect the PS201 via usb to your computer
+2. From terminal run 'ps_controller'. This runs a local web server that exposes the PS201
+3. From your favorite browser, go the the path 'localhost:8080'. This should open a web UI for the PS201 
 
 License
 ------
