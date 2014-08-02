@@ -4,15 +4,19 @@ body {
     /*height: 90vh;*/
 }
 
+.main-content {
+	margin-left: auto;
+	margin-right: auto;
+	width: 500px;
+}
+
 #voltage, #current {
     display: -webkit-flex;
     display: flex;
 }
 
 .statusValues {
-    border-width: 1px;
-    border-right-style: solid;
-    width: 400px;
+    width: 500px;
 }
 
 .statusTitle{
