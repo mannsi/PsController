@@ -31,18 +31,18 @@ var updateDisplayValues = function(json_reply){
 }
 
 var updateValues = function() {
-    $.ajax( document.location.origin + "/get_values" )
+    $.ajax( document.location.origin + "/all_values" )
       .done(function(reply) {
             newCurrentValues(reply);
       })
 }
 
 var setTargetVoltageValue = function() {
-    $.post(document.location.origin + "/set_target_voltage", { voltage: $("#targetVoltageInput").val()});
+    $.post(document.location.origin + "/voltage", { voltage: $("#targetVoltageInput").val()});
 }
 
 var setTargetCurrentValue = function() {
-    $.post(document.location.origin + "/set_target_current", { current: $("#targetCurrentInput").val()});
+    $.post(document.location.origin + "/current", { current: $("#targetCurrentInput").val()});
 }
 
 var blockUI = function(){
@@ -54,7 +54,7 @@ var unblockUI = function(){
 }
 
 var start = function(){
-    $.ajax( document.location.origin + "/connected" )
+    $.ajax( document.location.origin + "/device_connected" )
       .done(function(json_connected) {
             if (!jQuery.parseJSON(json_connected)){
                 blockUI();
@@ -91,11 +91,7 @@ $(document).ready(function() {
 
     $( "#onOffCheckboxInput").change(function() {
         window.onOffCheckboxChanging = true;
-        if ($(this).is(':checked')) {
-            $.post(document.location.origin + "/turn_on")
-        } else {
-            $.post(document.location.origin + "/turn_off")
-        }
+        $.post(document.location.origin + "/output_on", {value: $(this).is(':checked') ? 1 : 0})
     });
 
      // Runs when the css3 animation is finished on the on/off button

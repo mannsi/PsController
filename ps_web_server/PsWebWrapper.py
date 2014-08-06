@@ -4,7 +4,6 @@ from ps_controller.protocol.ProtocolFactory import ProtocolFactory
 from ps_controller.DeviceValues import DeviceValues
 
 
-# TODO document
 class Wrapper:
     def __init__(self):
         self._logHandlersAdded = False
@@ -26,7 +25,7 @@ class Wrapper:
             return
         self._hardware_interface.set_target_current(current)
 
-    def get_current_json(self) -> str:
+    def get_all_values_json(self) -> str:
         """
         Get a JSON object that represents the current device state
         """
@@ -44,6 +43,24 @@ class Wrapper:
         current_values_dict["connected"] = self._hardware_interface.connected()
 
         return json.dumps(current_values_dict)
+
+    def get_current(self) -> str:
+        """
+        Returns the actual current of the device as string
+        """
+        if not self._hardware_interface.connect():
+            return ""
+        all_values = self._hardware_interface.get_all_values()
+        return str(all_values.output_current)
+
+    def get_voltage(self) -> str:
+        """
+        Returns the actual current of the device as string
+        """
+        if not self._hardware_interface.connect():
+            return ""
+        all_values = self._hardware_interface.get_all_values()
+        return str(all_values.output_current)
 
     def set_device_on(self):
         """
@@ -77,7 +94,7 @@ class MockWrapper(Wrapper):
         self._current = 0
         super().__init__()
 
-    def get_current_json(self) -> str:
+    def get_all_values_json(self) -> str:
         mock_values = DeviceValues()
         mock_values.output_is_on = False
         mock_values.target_voltage = self._voltage
