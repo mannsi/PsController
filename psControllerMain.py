@@ -2,14 +2,18 @@ import ps_web_server.PsWebServer as webServer
 import argparse
 import os
 
+parser = argparse.ArgumentParser()
+parser.add_argument('-p', '--port', help='Port that server should listen on. Default is 8080')
+args = parser.parse_args()
+if args.port:
+    print(args.port)
+    webServer.port = int(args.port)
+
 
 def run():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('command', nargs='?', help='[start, stop, status]')
-    args = parser.parse_args()
-    if args.command == 'start' or not args.command:
-        webServer.run()
-    elif args.command == 'stop':
-        pass
-    elif args.command == 'status':
-        pass
+    print(webServer.port)
+    webServer.run()
+
+
+if __name__ == "__main__":
+    run()
