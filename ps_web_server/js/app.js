@@ -21,12 +21,12 @@ var newCurrentValues = function(reply) {
 }
 
 var updateDisplayValues = function(json_reply){
-    $("#outputVoltage").text(json_reply["outputVoltage_V"]);
-    $("#outputCurrent").text(json_reply["outputCurrent_mA"]);
-    $("#targetVoltage").text(parseFloat(json_reply["targetVoltage_V"]).toFixed(1));
-    $("#targetCurrent").text(json_reply["targetCurrent_mA"]);
+    $("#outputVoltage").text(json_reply["output_voltage_V"]);
+    $("#outputCurrent").text(json_reply["output_current_mA"]);
+    $("#targetVoltage").text(parseFloat(json_reply["target_voltage_V"]).toFixed(1));
+    $("#targetCurrent").text(json_reply["current_limit_mA"]);
     if (!window.onOffCheckboxChanging){
-        $("#onOffCheckboxInput").prop('checked', json_reply["outputOn"]);
+        $("#onOffCheckboxInput").prop('checked', json_reply["output_on"]);
     }
 }
 
@@ -38,11 +38,11 @@ var updateValues = function() {
 }
 
 var setTargetVoltageValue = function() {
-    $.post(document.location.origin + "/voltage", { voltage: $("#targetVoltageInput").val()});
+    $.post(document.location.origin + "/voltage", { target_voltage_V: $("#targetVoltageInput").val()});
 }
 
 var setTargetCurrentValue = function() {
-    $.post(document.location.origin + "/current", { current: $("#targetCurrentInput").val()});
+    $.post(document.location.origin + "/current", { current_limit_mA: $("#targetCurrentInput").val()});
 }
 
 var blockUI = function(){
@@ -91,7 +91,7 @@ $(document).ready(function() {
 
     $( "#onOffCheckboxInput").change(function() {
         window.onOffCheckboxChanging = true;
-        $.post(document.location.origin + "/output_on", {value: $(this).is(':checked') ? 1 : 0})
+        $.post(document.location.origin + "/output_on", {on: $(this).is(':checked') ? 1 : 0})
     });
 
      // Runs when the css3 animation is finished on the on/off button

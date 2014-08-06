@@ -45,29 +45,27 @@ class PsWebServer(object):
     def voltage(self, **params):
         """
         Gets or sets the voltage of the device. Values are in V
-        :param params: 'voltage' [V]
+        :param params: 'target_voltage_V'
         """
         try:
-            if cherrypy.request.method == 'GET':
-                return self._wrapper.get_voltage()
-            elif cherrypy.request.method == 'POST':
-                if 'voltage' in cherrypy.request.body_params:
-                    self._wrapper.set_voltage(float(cherrypy.request.body_params['voltage']))
+            if 'target_voltage_V' in params:
+                self._wrapper.set_voltage(float(params['target_voltage_V']))
+            else:
+                return self._wrapper.get_voltage_V()
         except Exception:
             pass
 
     @cherrypy.expose
     def current(self, **params):
         """
-        Gets or sets the current of the device. Values are in mA
-        :param params: 'current' [mA]
+        Gets or sets the current limit of the device. Values are in mA
+        :param params: 'current_limit_mA'
         """
         try:
-            if cherrypy.request.method == 'GET':
-                return self._wrapper.get_current()
-            elif cherrypy.request.method == 'POST':
-                if 'current' in cherrypy.request.body_params:
-                    self._wrapper.set_current(int(cherrypy.request.body_params['current']))
+            if 'current_limit_mA' in params:
+                self._wrapper.set_current(int(params['current_limit_mA']))
+            else:
+                return self._wrapper.get_current_mA()
         except Exception:
             pass
 
@@ -75,17 +73,17 @@ class PsWebServer(object):
     def output_on(self, **params):
         """
         Gets or sets the 'on' value of the device
-        :param params: 'value' [1, 0]
+        :param params: 'on' [1, 0]
         :return:
         """
         try:
-            if cherrypy.request.method == 'GET':
-                return self._wrapper.connected()
-            elif cherrypy.request.method == 'POST':
-                if 'value' in cherrypy.request.body_params and cherrypy.request.body_params['value'] == "1":
+            if 'on' in params:
+                if params['on'] == "1":
                     self._wrapper.set_device_on()
                 else:
                     self._wrapper.set_device_off()
+            else:
+                return str(self._wrapper.connected())
         except:
             pass
 

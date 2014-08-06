@@ -34,33 +34,32 @@ class Wrapper:
         all_values = self._hardware_interface.get_all_values()
 
         current_values_dict = dict()
-        current_values_dict["outputVoltage_V"] = round(all_values.output_voltage / 1000, 1)
-        current_values_dict["outputCurrent_mA"] = all_values.output_current
-        current_values_dict["inputVoltage_V"] = all_values.input_voltage
-        current_values_dict["targetVoltage_V"] = round(all_values.target_voltage / 1000, 1)
-        current_values_dict["targetCurrent_mA"] = all_values.target_current
-        current_values_dict["outputOn"] = all_values.output_is_on
-        current_values_dict["connected"] = self._hardware_interface.connected()
+        current_values_dict["output_voltage_V"] = round(all_values.output_voltage / 1000, 1)
+        current_values_dict["output_current_mA"] = all_values.output_current
+        current_values_dict["target_voltage_V"] = round(all_values.target_voltage / 1000, 1)
+        current_values_dict["current_limit_mA"] = all_values.target_current
+        current_values_dict["output_on"] = 1 if all_values.output_is_on else 0
+        current_values_dict["connected"] = 1 if self._hardware_interface.connected() else 0
 
         return json.dumps(current_values_dict)
 
-    def get_current(self) -> str:
+    def get_current_mA(self) -> str:
         """
-        Returns the actual current of the device as string
+        Returns the actual current of the device as string.
         """
         if not self._hardware_interface.connect():
             return ""
         all_values = self._hardware_interface.get_all_values()
         return str(all_values.output_current)
 
-    def get_voltage(self) -> str:
+    def get_voltage_V(self) -> str:
         """
-        Returns the actual current of the device as string
+        Returns the actual voltage of the device as string
         """
         if not self._hardware_interface.connect():
             return ""
         all_values = self._hardware_interface.get_all_values()
-        return str(all_values.output_current)
+        return str(round(all_values.output_voltage / 1000, 1))
 
     def set_device_on(self):
         """
