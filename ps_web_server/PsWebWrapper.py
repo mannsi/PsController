@@ -29,9 +29,9 @@ class Wrapper:
         """
         Get a JSON object that represents the current device state
         """
-        if not self._hardware_interface.connect():
-            return ""
-        all_values = self._hardware_interface.get_all_values()
+        all_values = DeviceValues()
+        if self._hardware_interface.connect():
+            all_values = self._hardware_interface.get_all_values()
 
         current_values_dict = dict()
         current_values_dict["output_voltage_V"] = round(all_values.output_voltage / 1000, 1)
@@ -66,7 +66,7 @@ class Wrapper:
         Returns bool if output is on or not
         """
         if not self._hardware_interface.connect():
-            return "0"
+            return ""
         all_values = self._hardware_interface.get_all_values()
         return all_values.output_is_on
 
