@@ -27,12 +27,11 @@ class PsWebServer(object):
         """
         Gets all values of the device as JSON dict.
         :returns:
-            "outputVoltage_V"
-            "outputCurrent_mA"
-            "inputVoltage_V"
-            "targetVoltage_V"
-            "targetCurrent_mA"
-            "outputOn"
+            "output_voltage_V"
+            "output_current_mA"
+            "target_voltage_V"
+            "current_limit_mA"
+            "output_on"
             "connected"
         """
         try:
@@ -83,16 +82,16 @@ class PsWebServer(object):
                 else:
                     self._wrapper.set_device_off()
             else:
-                return str(self._wrapper.connected())
+                return "1" if self._wrapper.get_output_on() else "0"
         except:
-            pass
+            return ""
 
     @cherrypy.expose
     def device_connected(self):
         try:
-            return json.dumps(self._wrapper.connected())
+            return "1" if self._wrapper.connected() else "0"
         except:
-            pass
+            return "0"
 
 
 # Catch the Ctrl-C interrupt and shut down the cherrypy server

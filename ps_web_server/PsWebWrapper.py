@@ -61,6 +61,15 @@ class Wrapper:
         all_values = self._hardware_interface.get_all_values()
         return str(round(all_values.output_voltage / 1000, 1))
 
+    def get_output_on(self) -> bool:
+        """
+        Returns bool if output is on or not
+        """
+        if not self._hardware_interface.connect():
+            return "0"
+        all_values = self._hardware_interface.get_all_values()
+        return all_values.output_is_on
+
     def set_device_on(self):
         """
         Turns the currently connected PS201 on. Raises a serial.Serial exception if not connected
