@@ -18,8 +18,12 @@ Running
 Precondition: Your user needs to belong to the user group 'dialout' to be able to access the usb port of the PS201.
 
 1. Connect the PS201 via usb to your computer
-2. From terminal run `ps_controller`. This runs a local web server that exposes the PS201
-3. From your favorite browser, go the the path 'localhost:8080'. This should open a web UI for the PS201 
+2. From terminal run `ps_controller`. This runs a local web server that exposes the PS201. By default the server uses port 8080. To use port XXX run `ps_controller --port XXX` instead.
+3. From your favorite browser, go the the path 'localhost:8080'. This should open a web UI for the PS201
+
+API
+------
+See the http://github.com/mannsi/PsController/wiki for details on the local web server API.
 
 License
 ------
