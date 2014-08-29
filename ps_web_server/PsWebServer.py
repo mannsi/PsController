@@ -88,10 +88,16 @@ class PsWebServer(object):
 
     @cherrypy.expose
     def device_connected(self):
+        """
+        Gets if device is connected to machine. Also informs if there are authentication issues for device.
+        :returns:
+            "connected"
+            "authentication_error"
+        """
         try:
-            return "1" if self._wrapper.connected() else "0"
+            return self._wrapper.connected_json()
         except:
-            return "0"
+            return ""
 
 
 # Catch the Ctrl-C interrupt and shut down the cherrypy server

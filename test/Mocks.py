@@ -57,10 +57,6 @@ class MockConnection(BaseConnectionInterface):
     def connected(self):
         return self._connected
 
-    def clear_buffer(self):
-        pass
-        #self._binary_data_in_buffer = []
-
     def get(self):
         if not self._connected:
             raise SerialException("Trying to set when closed connection")

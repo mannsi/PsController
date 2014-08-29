@@ -101,7 +101,7 @@ class PsDebugger:
 
     def button_connect_click(self):
         self._hardware_interface.connect()
-        if self._hardware_interface.connected():
+        if self._hardware_interface._connected():
             self.connected_label["text"] = "Connected"
 
     def add_message(self, to_device: bool, command: BaseCommand, data: str, serial: str, message: str):

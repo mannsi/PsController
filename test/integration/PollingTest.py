@@ -47,7 +47,7 @@ class PollingTest(unittest.TestCase):
         """
         Test the range of a voltage values with a current value of TARGET_CURRENT
         """
-        if not self.wrapper.connected():
+        if not self.wrapper._connected():
             raise Exception("Not connected")
         input_voltage = self.wrapper.get_values().input_voltage
         if input_voltage < 4:
@@ -63,7 +63,7 @@ class PollingTest(unittest.TestCase):
         """
         Test the range of current values with voltage value of 1V
         """
-        if not self.wrapper.connected():
+        if not self.wrapper._connected():
             raise Exception("Could not connect to device")
 
         for c in range(10, 1000, 10):

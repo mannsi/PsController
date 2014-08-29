@@ -32,6 +32,9 @@ class UsbProtocol(BaseProtocolInterface):
     def connected(self):
         return self._connection.connected()
 
+    def authentication_errors_on_machine(self) -> bool:
+        return not self._connection.has_available_ports()
+
     def get_all_values(self) -> DeviceValues:
         response = self._send_to_device(WriteAllValuesCommand(), expect_response=True, data='')
         return UsbDataMapping.from_data_to_device_values(response.data)
@@ -55,8 +58,6 @@ class UsbProtocol(BaseProtocolInterface):
 
     def _send_to_device(self, command: BaseCommand, expect_response: bool, data) -> DeviceResponse:
         with self._transactionLock:
-            # Clear buffer in case there are some streaming values still there
-            self._connection.clear_buffer()
             serial_data_to_device = UsbDataMapping.to_serial(command, data)
             self.logger.log_sending(command, data, self.readable_serial_from_serial(serial_data_to_device))
             self._connection.set(serial_data_to_device)

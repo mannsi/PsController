@@ -17,9 +17,6 @@ class BaseConnectionInterface:
         """
         raise NotImplementedError()
 
-    def clear_buffer(self):
-        raise NotImplementedError()
-
     def get(self) -> bytearray:
         """
         Reads a single response from PS201 and returns them. A single response from PS201 is surrounded
@@ -32,5 +29,11 @@ class BaseConnectionInterface:
     def set(self, sending_data: bytearray):
         """
         Sends sending_data to the connected PS201. If not connected, raise serial.Serial exception
+        """
+        raise NotImplementedError()
+
+    def has_available_ports(self) -> bool:
+        """
+        Returns if any ports are available on the machine
         """
         raise NotImplementedError()

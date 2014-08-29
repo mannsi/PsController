@@ -1,4 +1,5 @@
 import json
+from ps_controller import SerialException
 
 from ps_controller.protocol.ProtocolFactory import ProtocolFactory
 from ps_controller.DeviceValues import DeviceValues
@@ -30,16 +31,24 @@ class Wrapper:
         Get a JSON object that represents the current device state
         """
         all_values = DeviceValues()
-        if self._hardware_interface.connect():
-            all_values = self._hardware_interface.get_all_values()
-
         current_values_dict = dict()
-        current_values_dict["output_voltage_V"] = round(all_values.output_voltage / 1000, 1)
-        current_values_dict["output_current_mA"] = all_values.output_current
-        current_values_dict["target_voltage_V"] = round(all_values.target_voltage / 1000, 1)
-        current_values_dict["current_limit_mA"] = all_values.target_current
-        current_values_dict["output_on"] = 1 if all_values.output_is_on else 0
-        current_values_dict["connected"] = 1 if self._hardware_interface.connected() else 0
+        try:
+            if self._hardware_interface.connect():
+                all_values = self._hardware_interface.get_all_values()
+
+            current_values_dict["output_voltage_V"] = round(all_values.output_voltage / 1000, 1)
+            current_values_dict["output_current_mA"] = all_values.output_current
+            current_values_dict["target_voltage_V"] = round(all_values.target_voltage / 1000, 1)
+            current_values_dict["current_limit_mA"] = all_values.target_current
+            current_values_dict["output_on"] = 1 if all_values.output_is_on else 0
+            current_values_dict["connected"] = 1 if self._hardware_interface.connect() else 0
+        except Exception:
+            current_values_dict["output_voltage_V"] = 0
+            current_values_dict["output_current_mA"] = 0
+            current_values_dict["target_voltage_V"] = 0
+            current_values_dict["current_limit_mA"] = 0
+            current_values_dict["output_on"] = 0
+            current_values_dict["connected"] = 0
 
         return json.dumps(current_values_dict)
 
@@ -82,7 +91,7 @@ class Wrapper:
         """
         Turns the currently connected PS201 off. Raises a serial.Serial exception if not connected
         """
-        if not self._hardware_interface.connect():
+        if not self._hardware_interface.connected():
             return
         self._hardware_interface.set_device_is_on(False)
 
@@ -92,8 +101,15 @@ class Wrapper:
         self._hardware_interface.connect()
         return self._hardware_interface.connected()
 
-    def connected(self):
-        return self._hardware_interface.connected()
+    def connected_json(self):
+        connected = self._hardware_interface.connect()
+        return_value = dict()
+        return_value["connected"] = 1 if connected else 0
+        return_value["authentication_error"] = 0 if connected else (1 if self._authentication_errors() else 0)
+        return json.dumps(return_value)
+
+    def _authentication_errors(self):
+        return self._hardware_interface.authentication_errors_on_machine()
 
 
 class MockWrapper(Wrapper):
@@ -136,5 +152,5 @@ class MockWrapper(Wrapper):
     def connect(self):
         return True
 
-    def connected(self):
+    def _connected(self):
         return True

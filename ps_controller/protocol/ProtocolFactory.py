@@ -2,6 +2,7 @@ from ..connection.ConnectionFactory import ConnectionFactory
 from .UsbProtocol import UsbProtocol
 from ..logging.CustomLogger import CustomLogger
 from ..logging.CustomLoggerInterface import CustomLoggerInterface
+from ps_controller.protocol import BaseProtocolInterface
 
 
 class ProtocolFactory:
@@ -9,7 +10,7 @@ class ProtocolFactory:
         self._usb_protocol = None
         self.logger = logger
 
-    def get_protocol(self, protocol_type):
+    def get_protocol(self, protocol_type) -> BaseProtocolInterface:
         if not self.logger:
             self.logger = CustomLogger()
         connection = ConnectionFactory(self.logger).get_connection(connection_type=protocol_type)

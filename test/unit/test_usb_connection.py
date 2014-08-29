@@ -75,13 +75,6 @@ class TestUsbConnection(unittest.TestCase):
         self.assertEquals(_get_normal_single_data_package(), self._test_connection.get(),
                           "Should only get the second half of the double message")
 
-    def test_clearing_buffer(self):
-        self._test_connection.connect()
-        self._test_connection._base_connection.set_read_return_value(self._test_connection.get())
-        self._test_connection.clear_buffer()
-        self.assertEquals(None, self._test_connection.get(),
-                          "Already cleared the buffer so nothing should come back")
-
     def test_reading_from_closed_port(self):
         self.assertRaises(SerialException, self._test_connection.get)
 

@@ -3,20 +3,23 @@ window.deviceConnected = false;
 
 var newCurrentValues = function(reply) {
     var bla = document.location.origin;
-    var newIsConnected = (reply !== "");
+    var newIsConnected = (reply["connected"]);
     var oldIsConnected = window.deviceConnected;
     if (oldIsConnected && !newIsConnected){
         // Connection lost
-        blockUI();
+        blockUI('Unable to connect to device');
     }
     else if (!oldIsConnected && newIsConnected){
         // Connection restored
         unblockUI();
     }
+    else if (window.ui_blocked){
+        // Receiving values after server has been down
+        unblockUI();
+    }
     window.deviceConnected = newIsConnected;
     if (window.deviceConnected){
-        var json_object = jQuery.parseJSON(reply)
-        updateDisplayValues(json_object)
+        updateDisplayValues(reply)
     }
 }
 
@@ -32,9 +35,12 @@ var updateDisplayValues = function(json_reply){
 
 var updateValues = function() {
     $.ajax( document.location.origin + "/all_values" )
-      .done(function(reply) {
-            newCurrentValues(reply);
-      })
+        .done(function(json_reply) {
+            newCurrentValues(jQuery.parseJSON(json_reply));
+        })
+        .fail(function() {
+            blockUI('PS201 web server not found. <br /> Start it by running "ps_controller" from terminal');
+        })
 }
 
 var setTargetVoltageValue = function() {
@@ -45,19 +51,32 @@ var setTargetCurrentValue = function() {
     $.post(document.location.origin + "/current", { current_limit_mA: $("#targetCurrentInput").val()});
 }
 
-var blockUI = function(){
-    $.blockUI({ message: '<h1>Unable to connect to device</h1>' });
+var blockUI = function(blocking_message){
+    if (!window.ui_blocked)
+    {
+        window.ui_blocked = true;
+        $.blockUI({ message: '<h1>' + blocking_message + '</h1>' });
+    }
+
 }
 
 var unblockUI = function(){
+    window.ui_blocked = false;
     $.unblockUI();
 }
 
 var start = function(){
     $.ajax( document.location.origin + "/device_connected" )
-      .done(function(json_connected) {
-            if (!jQuery.parseJSON(json_connected)){
-                blockUI();
+      .done(function(json_reply) {
+            var reply = jQuery.parseJSON(json_reply)
+            if (!reply["connected"]){
+                if (reply["authentication_error"]){
+                    blockUI("Unable to access usb ports. <br />Linux users need to be part of 'dialout' group.");
+                }
+                else{
+                    blockUI("Unable to connect to device");
+                }
+
             }
             setInterval("updateValues()",1000);
       })
@@ -65,6 +84,7 @@ var start = function(){
 }
 
 $(document).ready(function() {
+    window.ui_blocked = false;
     start();
 
     $('#targetVoltageInput').keydown(function(event) {

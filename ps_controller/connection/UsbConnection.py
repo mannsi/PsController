@@ -44,6 +44,8 @@ class UsbConnection(BaseConnectionInterface):
         available_ports = self._available_connections()
         for port in available_ports:
             if self._device_on_port(port):
+                if self._base_connection.isOpen():
+                    self._base_connection.close()
                 self._base_connection.port = port
                 self._base_connection.open()
                 self._connected = self._base_connection.isOpen()
@@ -57,13 +59,6 @@ class UsbConnection(BaseConnectionInterface):
 
     def connected(self):
         return self._connected
-
-    def clear_buffer(self):
-        try:
-            self._base_connection.flushInput()
-        except Exception as e:
-            self._connected = False
-            raise SerialException(e)
 
     def get(self):
         try:
@@ -82,28 +77,44 @@ class UsbConnection(BaseConnectionInterface):
             self._connected = False
             raise SerialException(e)
 
-    def _available_connections(self) -> list:
-        """Get available usb ports"""
-        system_type = osHelper.get_current_os()
-        available = []
-        usb_list = []
-        if system_type == osHelper.WINDOWS:
-            usb_list = range(256)
-        elif system_type == osHelper.OSX:
-            usb_list = glob.glob('/dev/tty*') + glob.glob('/dev/cu*')
-        elif system_type == osHelper.LINUX:
-            usb_list = glob.glob('/dev/ttyS*') + glob.glob('/dev/ttyUSB*')
+    def has_available_ports(self) -> bool:
+        usb_ports = self._available_ports()
+        for port in usb_ports:
+            try:
+                tmp_connection = self._serial_link_generator()
+                tmp_connection.port = port
+                tmp_connection.open()
+                tmp_connection.close()
+                return True
+            except serial.SerialException:
+                pass
+        return False
 
-        for port in usb_list:
+    def _available_connections(self) -> list:
+        available = []
+        usb_ports = self._available_ports()
+        for port in usb_ports:
             try:
                 tmp_connection = self._serial_link_generator()
                 tmp_connection.port = port
                 tmp_connection.open()
                 available.append(tmp_connection.port)
                 tmp_connection.close()
-            except serial.SerialException as e:
+            except serial.SerialException:
                 pass
         return available
+
+    def _available_ports(self):
+        """Get available usb ports"""
+        system_type = osHelper.get_current_os()
+        usb_ports = []
+        if system_type == osHelper.WINDOWS:
+            usb_ports = range(256)
+        elif system_type == osHelper.OSX:
+            usb_ports = glob.glob('/dev/tty*') + glob.glob('/dev/cu*')
+        elif system_type == osHelper.LINUX:
+            usb_ports = glob.glob('/dev/ttyS*') + glob.glob('/dev/ttyUSB*')
+        return usb_ports
 
     def _send_to_device(self, serial_connection, data: bytes):
         serial_connection.write(data)

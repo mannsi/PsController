@@ -18,6 +18,12 @@ class BaseProtocolInterface:
         """
         raise NotImplementedError()
 
+    def authentication_errors_on_machine(self) -> bool:
+        """
+        Returns if machine has trouble connecting to devices because of authentication issues
+        """
+        raise NotImplementedError()
+
     def get_all_values(self) -> DeviceValues:
         """
         Returns the current values of the connected PS201.

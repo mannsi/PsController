@@ -12,8 +12,6 @@ _READ_TARGET_VOLTAGE = int('0xc0', 16)
 _READ_TARGET_CURRENT = int('0xc1', 16)
 _TURN_ON_OUTPUT = int('0xc2', 16)
 _TURN_OFF_OUTPUT = int('0xc3', 16)
-_START_STREAM = int('0xa2', 16)
-_STOP_STREAM = int('0xa3', 16)
 _ACKNOWLEDGE = int('0x06', 16)
 _NOT_ACKNOWLEDGE = int('0x15', 16)
 _HANDSHAKE = int('0xa0', 16)
@@ -130,22 +128,6 @@ class TurnOffOutputCommand(BaseCommand):
         return "Turn off output"
 
 
-class StartStreamCommand(BaseCommand):
-    def int_value(self):
-        return _START_STREAM
-
-    def readable(self):
-        return "Start stream"
-
-
-class StopStreamCommand(BaseCommand):
-    def int_value(self):
-        return _STOP_STREAM
-
-    def readable(self):
-        return "Stop stream"
-
-
 class AcknowledgementCommand(BaseCommand):
     """
     PS201 responds with this command when it acknowledges the command given to it
@@ -204,10 +186,6 @@ def get_command(command_int_value: int) -> BaseCommand:
         return TurnOnOutputCommand()
     elif command_int_value == _TURN_OFF_OUTPUT:
         return TurnOffOutputCommand()
-    elif command_int_value == _START_STREAM:
-        return StartStreamCommand()
-    elif command_int_value == _STOP_STREAM:
-        return StopStreamCommand()
     elif command_int_value == _ACKNOWLEDGE:
         return AcknowledgementCommand()
     elif command_int_value == _NOT_ACKNOWLEDGE:
