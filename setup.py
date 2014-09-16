@@ -1,11 +1,11 @@
 from ez_setup import use_setuptools
 use_setuptools()
 from setuptools import setup, find_packages
-
+from ps_controller import __version__
 
 setup(
     name="ps_controller"
-    , version="0.2.9"
+    , version=__version__
     , description="ps_controller"
     , packages=find_packages()
     , install_requires=[
@@ -13,7 +13,7 @@ setup(
         "pyserial == 2.7",
         "cherrypy == 3.2.4"
     ]
-    , data_files=[('/etc/init.d', ['ps_web_server/auto_start_script/ps_web_server'])]
+    #, data_files=[('/etc/init.d', ['ps_web_server/auto_start_script/ps_web_server'])]
     , package_data={'ps_web_server': ['css/*.css', 'fonts/museo/*', 'js/*.js', 'index.html']}
     , scripts=["psControllerMain.py"]
     , entry_points={
