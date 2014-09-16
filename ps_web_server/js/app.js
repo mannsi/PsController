@@ -13,7 +13,7 @@ var newCurrentValues = function(reply) {
         // Connection restored
         unblockUI();
     }
-    else if (window.ui_blocked){
+    else if (window.ui_blocked && newIsConnected){
         // Receiving values after server has been down
         unblockUI();
     }

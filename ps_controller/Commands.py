@@ -186,6 +186,8 @@ def get_command(command_int_value: int) -> BaseCommand:
         return TurnOnOutputCommand()
     elif command_int_value == _TURN_OFF_OUTPUT:
         return TurnOffOutputCommand()
+    elif command_int_value == _HANDSHAKE:
+        return HandshakeCommand()
     elif command_int_value == _ACKNOWLEDGE:
         return AcknowledgementCommand()
     elif command_int_value == _NOT_ACKNOWLEDGE:

@@ -101,7 +101,7 @@ class PsDebugger:
 
     def button_connect_click(self):
         self._hardware_interface.connect()
-        if self._hardware_interface._connected():
+        if self._hardware_interface.connected():
             self.connected_label["text"] = "Connected"
 
     def add_message(self, to_device: bool, command: BaseCommand, data: str, serial: str, message: str):
@@ -139,7 +139,7 @@ class DebugLogger(CustomLoggerInterface):
         self.ps_debugger = ps_debugger
 
     def log_sending(self, command, data, serial, message=''):
-        self.ps_debugger.add_message(to_device=True, command=command, data=data, serial=str(serial), message=message)
+        self.ps_debugger.add_message(to_device=True, command=command, data=data, serial=serial, message=message)
 
     def log_receiving(self, device_response):
         self.ps_debugger.add_message(to_device=FALSE, command=device_response.command,

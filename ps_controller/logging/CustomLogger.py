@@ -5,11 +5,12 @@ import logging
 from ..DeviceResponse import DeviceResponse
 from .CustomLoggerInterface import CustomLoggerInterface
 from ..Commands import BaseCommand
+from ..data_mapping.UsbDataMapping import UsbDataMapping
 
 
 class CustomLogger(CustomLoggerInterface):
     def __init__(self):
-        log_level = logging.ERROR
+        log_level = logging.DEBUG
         logger_name = "PS201Logger"
         self.logger = logging.getLogger(logger_name)
         self.logger.propagate = False
@@ -28,8 +29,11 @@ class CustomLogger(CustomLoggerInterface):
     def log_info(self, info_message):
         self.logger.log(logging.INFO, info_message)
 
-    def log_sending(self, command, data, serial: bytearray):
-        log_string = "Command " + command.readable() + " sent to device with data " + str(data)
+    def log_sending(self, command, data, serial):
+        log_string = "Command " + command.readable() + " sent to device with data " + str(data) + ". "
+
+        if serial:
+            log_string += "Serial data: " + str(serial)
         self.logger.log(logging.DEBUG, log_string)
 
     def log_receiving(self, device_response):

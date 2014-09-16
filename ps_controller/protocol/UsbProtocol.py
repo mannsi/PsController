@@ -59,7 +59,7 @@ class UsbProtocol(BaseProtocolInterface):
     def _send_to_device(self, command: BaseCommand, expect_response: bool, data) -> DeviceResponse:
         with self._transactionLock:
             serial_data_to_device = UsbDataMapping.to_serial(command, data)
-            self.logger.log_sending(command, data, self.readable_serial_from_serial(serial_data_to_device))
+            self.logger.log_sending(command, data, serial_data_to_device)
             self._connection.set(serial_data_to_device)
             acknowledgement = self._get_response_from_device()
             self._verify_acknowledgement(acknowledgement, command)
@@ -75,9 +75,6 @@ class UsbProtocol(BaseProtocolInterface):
         device_response = UsbDataMapping.from_serial(serial_response)
         self.logger.log_receiving(device_response)
         return device_response
-
-    def readable_serial_from_serial(self, serial):
-        return ''.join(UsbDataMapping.from_serial(serial).readable_serial)
 
     def _verify_crc_code(self, response: DeviceResponse):
         crc_return_value = Crc16.verify_crc_code(response)

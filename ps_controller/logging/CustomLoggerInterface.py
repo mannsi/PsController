@@ -5,7 +5,7 @@ from ..Commands import BaseCommand
 
 
 class CustomLoggerInterface:
-    def log_sending(self, command: BaseCommand, data, serial):
+    def log_sending(self, command: BaseCommand, data, serial_string: str):
         raise NotImplementedError()
 
     def log_receiving(self, device_response: DeviceResponse):
