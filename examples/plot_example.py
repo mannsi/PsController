@@ -83,6 +83,6 @@ anim = animation.FuncAnimation(
     fig,
     animate,
     init_func=init,
-    interval=1000, blit=True)
+    interval=1000, blit=False)
 
 plt.show()
