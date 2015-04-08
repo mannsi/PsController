@@ -1,11 +1,10 @@
+import os
+
 __author__ = 'mannsi'
 
 import logging
 
-from ..DeviceResponse import DeviceResponse
 from .CustomLoggerInterface import CustomLoggerInterface
-from ..Commands import BaseCommand
-from ..data_mapping.UsbDataMapping import UsbDataMapping
 
 
 class CustomLogger(CustomLoggerInterface):
@@ -15,7 +14,7 @@ class CustomLogger(CustomLoggerInterface):
         self.logger = logging.getLogger(logger_name)
         self.logger.propagate = False
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-        file_handler = logging.FileHandler("PS201.log")
+        file_handler = logging.FileHandler(os.path.join(os.path.expanduser('~'), 'PS201.log'))
         file_handler.setFormatter(formatter)
         self.logger.addHandler(file_handler)
         print_handler = logging.StreamHandler()
