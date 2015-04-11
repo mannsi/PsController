@@ -11,7 +11,7 @@ Currently there is no decided release date
 
 Installation
 ------
-The easiest way to install is to run `sudo python3 setup.py`. Note that this will try to download and install python dependencies so a network connection is probably needed (see the setup.py file for dependencies).
+The easiest way to install is to run `sudo python3 setup.py install`. Note that this will try to download and install python dependencies so a network connection is probably needed (see the setup.py file for dependencies).
 
 Running
 ------
