@@ -31,7 +31,7 @@ class BaseProtocolInterface:
         """
         raise NotImplementedError()
 
-    def set_target_voltage(self, voltage: float):
+    def set_target_voltage(self, voltage: int):
         """
         Set the target voltage of the connected PS201.
         Throws SerialException if not connected

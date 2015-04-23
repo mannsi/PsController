@@ -15,46 +15,43 @@ Preconditions:
 
 import time
 import unittest
+from ps_controller.protocol.ProtocolFactory import ProtocolFactory
 
-from ps_web_server.PsWebWrapper import Wrapper
 from ps_controller.DeviceValues import DeviceValues
+from test.Mocks import MockLogger
 
 
 MAX_VOLTAGE_PERCENTAGE_DEVIATION = 0.02
-MAX_VOLTAGE_ABSOLUTE_DEVIATION = 0.21
+MAX_VOLTAGE_ABSOLUTE_DEVIATION = 50
 
 MAX_CURRENT_PERCENTAGE_DEVIATION = 0.02
 MAX_CURRENT_ABSOLUTE_DEVIATION = 21
 
 TARGET_CURRENT = 10
-SLEEP_BETWEEN_STEPS = 2
+SLEEP_BETWEEN_STEPS = 1
 
 
 class PollingTest(unittest.TestCase):
     def setUp(self):
-        self.wrapper = Wrapper()
-        connected = self.wrapper.connect()
+        self._hardware_interface = ProtocolFactory(logger=MockLogger()).get_protocol("usb")
+        connected = self._hardware_interface.connect()
         if not connected:
             raise Exception("Unable to connect to PS201")
-        self.wrapper.set_values(0, 0)
-        self.wrapper.set_device_on()
+        self._hardware_interface.set_target_current(0)
+        self._hardware_interface.set_target_voltage(0)
+        self._hardware_interface.set_device_is_on(1)
 
     def tearDown(self):
-        self.wrapper.set_values(0, 0)
-        self.wrapper.set_device_off()
+        self._hardware_interface.set_target_current(0)
+        self._hardware_interface.set_target_voltage(0)
+        self._hardware_interface.set_device_is_on(0)
 
     def test_voltage(self):
         """
         Test the range of a voltage values with a current value of TARGET_CURRENT
         """
-        if not self.wrapper._connected():
-            raise Exception("Not connected")
-        input_voltage = self.wrapper.get_values().input_voltage
-        if input_voltage < 4:
-            raise Exception("Input voltage not high enough to test. Input voltage value: ", input_voltage)
-
-        end_voltage_test_range = input_voltage - 4
-        voltage_values = [x / 10 for x in range(int(end_voltage_test_range * 10))]
+        end_voltage_test_range = 8
+        voltage_values = [x * 100 for x in range(int(end_voltage_test_range * 10))]
         for v in voltage_values:
             self._compare_value_set(TARGET_CURRENT, v)
         print("Test script ran successfully")
@@ -63,9 +60,6 @@ class PollingTest(unittest.TestCase):
         """
         Test the range of current values with voltage value of 1V
         """
-        if not self.wrapper._connected():
-            raise Exception("Could not connect to device")
-
         for c in range(10, 1000, 10):
             self._compare_value_set(c, 1)
         print("Test script ran successfully")
@@ -89,9 +83,11 @@ class PollingTest(unittest.TestCase):
         """Sets the values of the device to target values and then records the device output values.
         Finally compares these values and throws an exception if they do not match according to expectations"""
         print("Checking voltage: ", target_voltage, " and current: ", target_current)
-        self.wrapper.set_values(target_voltage, target_current)
+
+        self._hardware_interface.set_target_current(target_current)
+        self._hardware_interface.set_target_voltage(target_voltage)
         time.sleep(SLEEP_BETWEEN_STEPS)
-        all_values = self.wrapper.get_values()
+        all_values = self._hardware_interface.get_all_values()
 
         if target_current != all_values.target_current:
             raise Exception("Wrong target current measured. Target current is ", target_current,

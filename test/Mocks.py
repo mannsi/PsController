@@ -43,57 +43,15 @@ class MockSerialLink:
         self._return_read_value = data
 
 
-class MockConnection(BaseConnectionInterface):
-    def __init__(self):
-        self._connected = False
-        self._binary_data_in_buffer = []
-
-    def connect(self):
-        self._connected = True
-
-    def disconnect(self):
-        self._connected = False
-
-    def connected(self):
-        return self._connected
-
-    def get(self):
-        if not self._connected:
-            raise SerialException("Trying to set when closed connection")
-
-        if not self._binary_data_in_buffer:
-            return bytearray()
-        try:
-            line = bytearray()
-            start_count = 0
-            while True:
-                c = self._binary_data_in_buffer.pop(0)
-                line.append(c)
-                if c == Constants.START:
-                    start_count += 1
-                if start_count == 2:
-                    break
-            return line
-        except Exception as e:
-            raise SerialException(e)
-
-    def set(self, sending_data):
-        if not self._connected:
-            raise SerialException("Trying to set when closed connection")
-
-    def set_binary_buffer_data(self, data):
-        self._binary_data_in_buffer = data
-
-
 class MockLogger(CustomLoggerInterface):
-    def log_sending(self, command, data, serial):
+    def log_sending(self, message: bytes):
         pass
 
-    def log_receiving(self, device_response):
+    def log_receiving(self, message: bytes):
         pass
 
     def log_error(self, error_message: str):
         pass
 
-    def log_info(self, info_message: str):
+    def log(self, message: str):
         pass

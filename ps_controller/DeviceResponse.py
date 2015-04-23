@@ -1,14 +1,12 @@
 __author__ = 'mannsi'
-from .Commands import BaseCommand
 
 
 class DeviceResponse:
     def __init__(self):
-        self.start = 0
-        self.command = BaseCommand()
+        self.command = ""
         self.data_length = 0
+        self.data_length_hex = ""
         self.data = ""
-        self.crc = []  # list of int values
+        self.crc = ""  # ascii hex string
+        self.decoded_response = ""
         self.serial_response = bytearray()
-        self.readable_serial = []
-        self.raw_data = bytearray()

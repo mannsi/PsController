@@ -10,13 +10,13 @@ class Wrapper:
         self._logHandlersAdded = False
         self._hardware_interface = ProtocolFactory().get_protocol("usb")
 
-    def set_voltage(self, voltage: float):
+    def set_voltage(self, voltage: int):
         """
         Set the voltage value of the connected PS201. Raises a serial.Serial exception if not connected
         """
         if not self._hardware_interface.connect():
             return
-        self._hardware_interface.set_target_voltage(voltage*1000)
+        self._hardware_interface.set_target_voltage(int(voltage*1000))
 
     def set_current(self, current: int):
         """

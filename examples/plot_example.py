@@ -1,3 +1,10 @@
+"""
+Note: This example requires
+    matplotlib
+    pyparsing
+    numpy // This probably installs the other two
+"""
+
 from matplotlib import pyplot as plt
 from matplotlib import animation
 import urllib.request

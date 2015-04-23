@@ -1,10 +1,10 @@
 from ..connection.UsbConnection import UsbConnection
 from ..data_mapping.UsbDataMapping import UsbDataMapping
 from .BaseConnectionInterface import BaseConnectionInterface
-from ..Commands import AcknowledgementCommand, HandshakeCommand
 from ..logging.CustomLoggerInterface import CustomLoggerInterface
 
 import serial
+from ps_controller.Constants import Constants
 
 
 class ConnectionFactory:
@@ -21,34 +21,33 @@ class ConnectionFactory:
                     logger=self.logger,
                     serial_link_generator=self._get_serial_link,
                     id_message=ConnectionFactory._get_device_message_id(),
-                    device_verification_func=self._device_id_response_function)
+                    device_verification_func=self._device_id_response_function,
+                    device_start_end_byte=ord(Constants.START))
             return self._usb_connection
 
     @staticmethod
     def _get_device_message_id():
         """Gives the messages needed to send to device to verify that device is using a given port"""
-        return UsbDataMapping.to_serial(HandshakeCommand(), data='')
+        return UsbDataMapping.to_serial(Constants.HANDSHAKE_COMMAND, data='')
 
     def _device_id_response_function(self, serial_response: bytearray, port: str) -> bool:
         """Function used to verify an id response from device, i.e. if the response come from our device or not"""
-        not_ack_string = "Did not receive an ACKNOWLEDGE response on port " + port
-        ack_string = "Received ACKNOWLEDGE response on port " + port
-        try:
-            if not serial_response:
-                self.logger.log_info(not_ack_string)
-                return False
-            response = UsbDataMapping.from_serial(serial_response)
-            response.data = port
-            self.logger.log_receiving(response)
-            return_value = response.command == AcknowledgementCommand()
-            if return_value:
-                self.logger.log_info(ack_string)
-            else:
-                self.logger.log_info(not_ack_string)
-            return return_value
-        except:
-            self.logger.log_info(not_ack_string)
+        not_ack_string = "Did not receive an ACKNOWLEDGE response on port " + str(port)
+
+        response = UsbDataMapping.from_serial(serial_response)
+        if not response:
+            self.logger.log(not_ack_string)
             return False
+
+        response.data = port
+        return_value = response.command == Constants.ACKNOWLEDGE_COMMAND
+        if return_value:
+            ack_string = "Received ACKNOWLEDGE response on port " + str(port)
+            self.logger.log(ack_string)
+        else:
+            self.logger.log_receiving(serial_response)
+            self.logger.log(not_ack_string)
+        return return_value
 
     def _get_serial_link(self) -> serial.Serial:
         return serial.Serial(baudrate=9600, timeout=0.1)

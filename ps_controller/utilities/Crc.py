@@ -1,35 +1,33 @@
 import crcmod.predefined
 
-from ..Constants import Constants
 from ..DeviceResponse import DeviceResponse
-from ..Commands import BaseCommand
 
 
-class Crc16:
+class CrcHelper:
     @classmethod
     def verify_crc_code(cls, response: DeviceResponse):
         """
         Verifies that the crc code in the response is the same as we expect given the response data.
-        Returns: None if crc codes match, otherwise tuple containing (received_crc_code, expected_crc_code).
+        Returns: (error: bool, expected_crc_code: str, actual_crc_code: str).
         """
-        expected_crc_code = Crc16.create(response.command, response.raw_data)
+        expected_crc_code = CrcHelper.create(response.command, response.data_length_hex, response.data)
         if response.crc != expected_crc_code:
-            return response.crc, expected_crc_code
-        return None
+            return 1, response.crc, expected_crc_code
+        return 0, "", ""
 
     @classmethod
-    def create(cls, command: BaseCommand, binary_data: bytes):
+    def create(cls, command: str, hex_data_length: str, data: str) -> str:
         """
-        Returns a list of ints containing the crc code from input values
+        Returns crc value in 4 char hex string
         """
-        bytes_command = bytes([command.int_value()])
+        joined_string = command + hex_data_length + data
+        joined_string_in_bytes = joined_string.encode('ascii')
+
         crc16 = crcmod.predefined.Crc('xmodem')
-        crc16.update(bytes_command)
-        crc16.update(bytes([len(binary_data)]))
-        crc16.update(binary_data)
-        hex_crc = cls._get_hex_list_from_int(crc16.crcValue)
-        int_crc =  [int(unescapedCrcByte, 16) for unescapedCrcByte in hex_crc]
-        return int_crc
+        crc16.update(joined_string_in_bytes)
+        crc_int_value = crc16.crcValue
+        crc_in_hex = format(crc_int_value, '04X')
+        return crc_in_hex
 
     @staticmethod
     def _get_hex_list_from_int(int_value: int) -> list:
