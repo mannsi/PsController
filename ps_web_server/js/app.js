@@ -40,7 +40,7 @@ var updateValues = function() {
             setTimeout(updateValues, 1000);
         })
         .fail(function() {
-            blockUI('PS201 web server not found. <br /> Start it by running "ps_controller" from terminal');
+            blockUI('PS201 web server not found. <br /> Start it by running "PsController" from terminal');
             setTimeout(updateValues, 1000);
         })
 }
@@ -58,9 +58,7 @@ var blockUI = function(blocking_message){
     {
         window.ui_blocked = true;
         $.blockUI({ message: '<h1>' + blocking_message + '</h1>' ,css:{cursor:'default'}});
-
     }
-
 }
 
 var unblockUI = function(){

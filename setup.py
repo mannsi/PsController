@@ -18,7 +18,7 @@ setup(
     , scripts=["psControllerMain.py"]
     , entry_points={
         "console_scripts": [
-            "ps_controller = psControllerMain:run"
+            "PsController = psControllerMain:run"
 
         ]
     }
