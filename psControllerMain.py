@@ -1,4 +1,4 @@
-import ps_web_server.PsWebServer as webServer
+import ps_web_server.PsWebServer
 import argparse
 from ps_controller import __version__
 
@@ -16,14 +16,16 @@ def run():
         print(__version__)
         return
 
+    server = ps_web_server.PsWebServer.PsWebServer()
+
     if args.port:
         print(args.port)
-        webServer.port = args.port
+        server.set_port(args.port)
 
     if args.debug:
-        webServer.set_debug()
+        server.set_debug()
 
-    webServer.run()
+    server.start()
 
 
 if __name__ == "__main__":

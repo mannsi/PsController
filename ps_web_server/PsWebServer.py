@@ -1,18 +1,54 @@
 import cherrypy
 import os
 from ps_web_server.PsWebWrapper import Wrapper
-import sys
 import logging
-
-host = '127.0.0.1'
-port = 8080
-logging_level = logging.NOTSET
 
 
 class PsWebServer(object):
     def __init__(self):
-        self._wrapper = Wrapper(logging_level)
+        self._host = '127.0.0.1'
+        self._port = 8080
+        self._logging_level = logging.NOTSET
+        self._wrapper = Wrapper(self._logging_level)
         self._wrapper.connect()
+
+    def start(self):
+        conf = {
+            'global': {
+                'server.socket_host': self._host,
+                'server.socket_port': self._port
+            },
+            '/': {
+                'tools.sessions.on': True,
+                'tools.staticdir.root': os.path.abspath(os.path.split(__file__)[0])
+            },
+            '/css': {
+                'tools.staticdir.on': True,
+                'tools.staticdir.dir': './css'
+            },
+            '/js': {
+                'tools.staticdir.on': True,
+                'tools.staticdir.dir': './js'
+            },
+            '/fonts': {
+                'tools.staticdir.on': True,
+                'tools.staticdir.dir': './fonts'
+            }
+        }
+
+        if self._logging_level == logging.NOTSET:
+            cherrypy.log.screen = None
+        cherrypy.quickstart(self, '/', conf)
+
+    def set_debug(self):
+        self._logging_level = logging.DEBUG
+
+    def set_port(self, port):
+        self._port = port
+
+    @cherrypy.expose
+    def stop(self):
+        cherrypy.engine.exit()
 
     @cherrypy.expose
     def index(self):
@@ -101,47 +137,15 @@ class PsWebServer(object):
 
 
 # Catch the Ctrl-C interrupt and shut down the cherrypy server
-def signal_handler(signal, frame):
-    cherrypy.engine.exit()
-    sys.exit(0)
+#def signal_handler(signal, frame):
+#    cherrypy.engine.exit()
+#    sys.exit(0)
 
 
 #signal.signal(signal.SIGHUP, signal_handler)
 #signal.signal(signal.SIGINT, signal_handler)
 
 
-def run():
-    conf = {
-        'global': {
-            'server.socket_host': host,
-            'server.socket_port': port
-        },
-        '/': {
-            'tools.sessions.on': True,
-            'tools.staticdir.root': os.path.abspath(os.path.split(__file__)[0])
-        },
-        '/css': {
-            'tools.staticdir.on': True,
-            'tools.staticdir.dir': './css'
-        },
-        '/js': {
-            'tools.staticdir.on': True,
-            'tools.staticdir.dir': './js'
-        },
-        '/fonts': {
-            'tools.staticdir.on': True,
-            'tools.staticdir.dir': './fonts'
-        }
-    }
-
-    if logging_level == logging.NOTSET:
-        cherrypy.log.screen = None
-    cherrypy.quickstart(PsWebServer(), '/', conf)
 
 
-def set_debug():
-    global logging_level
-    logging_level = logging.DEBUG
 
-if __name__ == "__main__":
-    run()
