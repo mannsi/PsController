@@ -3,7 +3,6 @@ import glob
 import serial
 
 from .BaseConnectionInterface import BaseConnectionInterface
-from ps_controller import SerialException
 import ps_controller.utilities.OsHelper as osHelper
 from ..logging.CustomLoggerInterface import CustomLoggerInterface
 
@@ -68,16 +67,14 @@ class UsbConnection(BaseConnectionInterface):
             if serial_response == b'':
                 return None
             return serial_response
-        except Exception as e:
+        except serial.SerialException:
             self._connected = False
-            raise SerialException(e)
 
     def set(self, sending_data):
         try:
             self._send_to_device(self._base_connection, sending_data)
-        except serial.SerialTimeoutException as e:
+        except serial.SerialException:
             self._connected = False
-            raise SerialException(e)
 
     def has_available_ports(self) -> bool:
         usb_ports = self._available_ports()
@@ -151,5 +148,5 @@ class UsbConnection(BaseConnectionInterface):
             device_serial_response = self._read_device_response(tmp_connection)
             tmp_connection.close()
             return self._device_verification_func(device_serial_response, usb_port)
-        except serial.SerialTimeoutException:
+        except serial.SerialException:
             return False

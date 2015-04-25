@@ -1,8 +1,5 @@
 __author__ = 'mannsi'
 
-from ps_controller import SerialException
-from ps_controller.connection.BaseConnectionInterface import BaseConnectionInterface
-from ps_controller.Constants import Constants
 from ps_controller.logging.CustomLoggerInterface import CustomLoggerInterface
 
 
@@ -29,14 +26,14 @@ class MockSerialLink:
 
     def read(self, number_of_bytes):
         if not self._connected:
-            raise SerialException("Trying to read when connection is closed")
+            raise Exception("Trying to read when connection is closed")
         return_value = self._return_read_value[0:number_of_bytes]
         self._return_read_value = self._return_read_value[number_of_bytes:]
         return return_value
 
     def write(self, data):
         if not self._connected:
-            raise SerialException("Trying to write when connection is closed")
+            raise Exception("Trying to write when connection is closed")
         pass
 
     def set_read_return_value(self, data):

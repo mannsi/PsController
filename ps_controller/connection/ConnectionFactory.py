@@ -1,5 +1,5 @@
 from ..connection.UsbConnection import UsbConnection
-from ..data_mapping.UsbDataMapping import UsbDataMapping
+from ps_controller import SerialParser
 from .BaseConnectionInterface import BaseConnectionInterface
 from ..logging.CustomLoggerInterface import CustomLoggerInterface
 
@@ -28,13 +28,13 @@ class ConnectionFactory:
     @staticmethod
     def _get_device_message_id():
         """Gives the messages needed to send to device to verify that device is using a given port"""
-        return UsbDataMapping.to_serial(Constants.HANDSHAKE_COMMAND, data='')
+        return SerialParser.to_serial(Constants.HANDSHAKE_COMMAND, data='')
 
     def _device_id_response_function(self, serial_response: bytearray, port: str) -> bool:
         """Function used to verify an id response from device, i.e. if the response come from our device or not"""
         not_ack_string = "Did not receive an ACKNOWLEDGE response on port " + str(port)
 
-        response = UsbDataMapping.from_serial(serial_response)
+        response = SerialParser.from_serial(serial_response)
         if not response:
             self.logger.log(not_ack_string)
             return False

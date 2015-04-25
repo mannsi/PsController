@@ -1,8 +1,7 @@
 import threading
 
 from .BaseProtocolInterface import BaseProtocolInterface
-from ..data_mapping.UsbDataMapping import UsbDataMapping
-from ps_controller import SerialException
+from ps_controller import SerialParser, PsControllerException
 from ps_controller.Constants import Constants
 from ..utilities.Crc import CrcHelper
 from ..DeviceResponse import DeviceResponse
@@ -40,8 +39,8 @@ class UsbProtocol(BaseProtocolInterface):
         if response.command != Constants.WRITE_ALL_RESPOND:
             self._logger.log_error(
                 "Did not receive expected response with Write all command :" + Constants.WRITE_ALL_RESPOND)
-            return None
-        return UsbDataMapping.from_data_to_device_values(response.data)
+            return DeviceValues()
+        return SerialParser.from_data_to_device_values(response.data)
 
     def set_target_voltage(self, voltage):
         if voltage > 20000:
@@ -63,19 +62,23 @@ class UsbProtocol(BaseProtocolInterface):
 
     def _send_to_device(self, command: str, expect_response: bool, data: str) -> DeviceResponse:
         with self._transactionLock:
-            serial_data_to_device = UsbDataMapping.to_serial(command, data)
+            serial_data_to_device = SerialParser.to_serial(command, data)
             self._logger.log_sending(serial_data_to_device)
             self._connection.set(serial_data_to_device)
             acknowledgement = self._get_response_from_device()
+            if not acknowledgement:
+                raise PsControllerException("Empty acknowledge from device")
             self._verify_acknowledgement(acknowledgement)
             if expect_response:
                 response = self._get_response_from_device()
+                if not response:
+                    raise PsControllerException("Empty response from device")
                 self._verify_crc_code(response)
                 return response
 
     def _get_response_from_device(self) -> DeviceResponse:
         serial_response = self._connection.get()
-        device_response = UsbDataMapping.from_serial(serial_response)
+        device_response = SerialParser.from_serial(serial_response)
         if not device_response:
             return None
         self._logger.log_receiving(device_response.serial_response)
@@ -89,7 +92,9 @@ class UsbProtocol(BaseProtocolInterface):
 
     def _verify_acknowledgement(self, acknowledgement_response: DeviceResponse):
         if not acknowledgement_response:
-            raise SerialException("No response from device")
+            log_string = "Received no response from device"
+            self._logger.log_error(log_string)
+            return
         elif acknowledgement_response.command == Constants.NOT_ACKNOWLEDGE_COMMAND:
             log_string = "Received 'NOT ACKNOWLEDGE' from device."
             self._logger.log_error(log_string)

@@ -7,7 +7,7 @@ var newCurrentValues = function(reply) {
     var oldIsConnected = window.deviceConnected;
     if (oldIsConnected && !newIsConnected){
         // Connection lost
-        blockUI('Unable to connect to device');
+        blockUI('Unable to connect to device. Trying to reconnect ...');
     }
     else if (!oldIsConnected && newIsConnected){
         // Connection restored
@@ -37,9 +37,11 @@ var updateValues = function() {
     $.ajax( document.location.origin + "/all_values" )
         .done(function(json_reply) {
             newCurrentValues(jQuery.parseJSON(json_reply));
+            setTimeout(updateValues, 1000);
         })
         .fail(function() {
             blockUI('PS201 web server not found. <br /> Start it by running "ps_controller" from terminal');
+            setTimeout(updateValues, 1000);
         })
 }
 
@@ -55,7 +57,8 @@ var blockUI = function(blocking_message){
     if (!window.ui_blocked)
     {
         window.ui_blocked = true;
-        $.blockUI({ message: '<h1>' + blocking_message + '</h1>' });
+        $.blockUI({ message: '<h1>' + blocking_message + '</h1>' ,css:{cursor:'default'}});
+
     }
 
 }
@@ -78,7 +81,7 @@ var start = function(){
                 }
 
             }
-            setInterval("updateValues()",1000);
+            updateValues();
       })
 
 }

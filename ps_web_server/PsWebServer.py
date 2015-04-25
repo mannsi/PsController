@@ -1,18 +1,21 @@
 import cherrypy
 import os
+import traceback
 from ps_web_server.PsWebWrapper import Wrapper
-import logging
 
 
 class PsWebServer(object):
-    def __init__(self):
+    def __init__(self, port, ps_log_level, server_logging):
         self._host = '127.0.0.1'
-        self._port = 8080
-        self._logging_level = logging.NOTSET
-        self._wrapper = Wrapper(self._logging_level)
-        self._wrapper.connect()
+        self._port = port
+        self.server_logging = server_logging
+        self._wrapper = Wrapper(ps_log_level)
 
     def start(self):
+        """Starts the web server
+        :return: None
+        """
+
         conf = {
             'global': {
                 'server.socket_host': self._host,
@@ -36,22 +39,26 @@ class PsWebServer(object):
             }
         }
 
-        if self._logging_level == logging.NOTSET:
+        self._wrapper.connect()
+
+        if not self.server_logging:
             cherrypy.log.screen = None
         cherrypy.quickstart(self, '/', conf)
 
-    def set_debug(self):
-        self._logging_level = logging.DEBUG
-
-    def set_port(self, port):
-        self._port = port
-
     @cherrypy.expose
     def stop(self):
+        """Stops the web server
+
+        :return: None
+        """
         cherrypy.engine.exit()
 
     @cherrypy.expose
     def index(self):
+        """Gives the default index page of the web server
+
+        :return: str -- Index page of web server
+        """
         self._wrapper.connect()
         index_file_path = os.path.join(os.path.dirname(__file__), 'index.html')
         with open(index_file_path)as f:
@@ -60,84 +67,81 @@ class PsWebServer(object):
 
     @cherrypy.expose
     def all_values(self):
-        """
-        Gets all values of the device as JSON dict.
-        :returns:
-            "output_voltage_V"
-            "output_current_mA"
-            "target_voltage_V"
-            "current_limit_mA"
-            "output_on"
-            "connected"
+        """Gets all values of the device.
+
+        :return: str -- JSON dict with the following keys::
+            - output_voltage_V
+            - output_current_mA
+            - target_voltage_V
+            - current_limit_mA
+            - output_on
+            - connected
+
         """
         try:
-            json_current_values = self._wrapper.get_all_values_json()
-            return json_current_values
-        except Exception as e:
-            return ""
+            return self._wrapper.get_all_values_json()
+        except:
+            traceback.print_exc()
 
     @cherrypy.expose
     def voltage(self, **params):
+        """Gets or sets the voltage of the device. Pass in target voltage with key 'target_voltage_V' to set the voltage value
+
+        :param params: Dictionary of values. Value with key 'target_voltage_V' will be used if provided
+        :type params: dict
+        :return: str or None -- If called with no parameter then output voltage is returned in units of V
+
         """
-        Gets or sets the voltage of the device. Values are in V
-        :param params: 'target_voltage_V'
-        """
-        try:
-            if 'target_voltage_V' in params:
-                self._wrapper.set_voltage(float(params['target_voltage_V']))
-            else:
-                return self._wrapper.get_voltage_V()
-        except Exception:
-            pass
+        if 'target_voltage_V' in params:
+            self._wrapper.set_voltage(float(params['target_voltage_V']))
+        else:
+            return self._wrapper.get_voltage()
 
     @cherrypy.expose
     def current(self, **params):
+        """ Gets or sets the current of the device. Pass in target current with key 'current_limit_mA' to set the voltage value
+
+        :param params: Value with key 'current_limit_mA' will be used if provided
+        :type params: dict
+        :return: str or None -- If called with no parameter then output current is returned in units of mA
+
         """
-        Gets or sets the current limit of the device. Values are in mA
-        :param params: 'current_limit_mA'
-        """
-        try:
-            if 'current_limit_mA' in params:
-                self._wrapper.set_current(int(params['current_limit_mA']))
-            else:
-                return self._wrapper.get_current_mA()
-        except Exception:
-            pass
+        if 'current_limit_mA' in params:
+            self._wrapper.set_current(int(params['current_limit_mA']))
+        else:
+            return self._wrapper.get_current()
 
     @cherrypy.expose
     def output_on(self, **params):
+        """ Gets or set the output on value of the device. Pass in value "0" or "1" on key 'on' to set the output value
+
+        :param params: Value with key 'on' will be used if provided
+        :type params: dict
+        :return: str or None -- Returns values "0" or "1" if called with no parameter
         """
-        Gets or sets the 'on' value of the device
-        :param params: 'on' [1, 0]
-        :return:
-        """
-        try:
-            if 'on' in params:
-                if params['on'] == "1":
-                    self._wrapper.set_device_on()
-                else:
-                    self._wrapper.set_device_off()
+        if 'on' in params:
+            if params['on'] == "1":
+                self._wrapper.set_device_on()
             else:
-                return "1" if self._wrapper.get_output_on() else "0"
-        except:
-            return ""
+                self._wrapper.set_device_off()
+        else:
+            return "1" if self._wrapper.get_output_on() else "0"
 
     @cherrypy.expose
     def device_connected(self):
         """
-        Gets if device is connected to machine. Also informs if there are authentication issues for device.
-        :returns:
-            "connected"
-            "authentication_error"
+        Gets connection status and possible authentication issues
+
+        :return: str -- JSON dict with the following keys
+            - connected
+            - authentication_error
         """
-        try:
-            return self._wrapper.connected_json()
-        except:
-            return ""
+        return self._wrapper.connected_json()
+
 
 
 # Catch the Ctrl-C interrupt and shut down the cherrypy server
-#def signal_handler(signal, frame):
+# def signal_handler(signal, frame):
 #    cherrypy.engine.exit()
 #    sys.exit(0)
 

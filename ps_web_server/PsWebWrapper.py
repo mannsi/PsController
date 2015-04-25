@@ -1,108 +1,148 @@
 import json
-from ps_controller import SerialException
+from ps_controller import PsControllerException
+from ps_controller.DeviceValues import DeviceValues
 from ps_controller.logging.CustomLogger import CustomLogger
 
 from ps_controller.protocol.ProtocolFactory import ProtocolFactory
-from ps_controller.DeviceValues import DeviceValues
 
 
 class Wrapper:
-    def __init__(self, logging_level):
-        logger = CustomLogger(logging_level)
+    """ Abstracts communication to the device for the PsWebServer"""
+    def __init__(self, log_level):
+        self._logHandlersAdded = False
+        logger = CustomLogger(log_level)
         self._hardware_interface = ProtocolFactory(logger).get_protocol("usb")
 
-    def set_voltage(self, voltage: int):
-        """
-        Set the voltage value of the connected PS201. Raises a serial.Serial exception if not connected
-        """
-        if not self._hardware_interface.connect():
-            return
-        self._hardware_interface.set_target_voltage(int(voltage*1000))
+    def set_voltage(self, voltage):
+        """Set the voltage value of the connected PS201
 
-    def set_current(self, current: int):
+        :param voltage: The voltage to set. Unit is V
+        :type voltage: float
+        :return: None
         """
-        Set the current value of the connected PS201. Raises a serial.Serial exception if not connected
-        """
-        if not self._hardware_interface.connect():
-            return
-        self._hardware_interface.set_target_current(current)
-
-    def get_all_values_json(self) -> str:
-        """
-        Get a JSON object that represents the current device state
-        """
-        all_values = DeviceValues()
-        current_values_dict = dict()
+        self._hardware_interface.connect()
         try:
-            if self._hardware_interface.connect():
-                all_values = self._hardware_interface.get_all_values()
+            self._hardware_interface.set_target_voltage(int(voltage*1000))
+        except PsControllerException:
+            pass
 
-            current_values_dict["output_voltage_V"] = round(all_values.output_voltage / 1000, 1)
-            current_values_dict["output_current_mA"] = all_values.output_current
-            current_values_dict["target_voltage_V"] = round(all_values.target_voltage / 1000, 1)
-            current_values_dict["current_limit_mA"] = all_values.target_current
-            current_values_dict["output_on"] = 1 if all_values.output_is_on else 0
-            current_values_dict["connected"] = 1 if self._hardware_interface.connect() else 0
-        except Exception:
-            current_values_dict["output_voltage_V"] = 0
-            current_values_dict["output_current_mA"] = 0
-            current_values_dict["target_voltage_V"] = 0
-            current_values_dict["current_limit_mA"] = 0
-            current_values_dict["output_on"] = 0
-            current_values_dict["connected"] = 0
+    def set_current(self, current):
+        """Set the current value of the connected PS201
+
+        :param current: The current to set. Unit is mA
+        :type current: int
+        :return: None
+        """
+        self._hardware_interface.connect()
+        try:
+            self._hardware_interface.set_target_current(current)
+        except PsControllerException:
+            pass
+
+    def get_all_values_json(self):
+        """Get all device values on JSON format
+
+        :return: str -- JSON str dict of device values with the following keys::
+            - output_voltage_V
+            - output_current_mA
+            - target_voltage_V
+            - current_limit_mA
+            - output_on
+            - connected
+        """
+        self._hardware_interface.connect()
+        try:
+            all_values = self._hardware_interface.get_all_values()
+        except PsControllerException:
+            all_values = DeviceValues()
+
+        current_values_dict = dict()
+        current_values_dict["output_voltage_V"] = round(all_values.output_voltage / 1000, 1)
+        current_values_dict["output_current_mA"] = all_values.output_current
+        current_values_dict["target_voltage_V"] = round(all_values.target_voltage / 1000, 1)
+        current_values_dict["current_limit_mA"] = all_values.target_current
+        current_values_dict["output_on"] = 1 if all_values.output_is_on else 0
+        current_values_dict["connected"] = 1 if self._hardware_interface.connected() else 0
 
         return json.dumps(current_values_dict)
 
-    def get_current_mA(self) -> str:
+    def get_current(self):
+        """Get the output current of the connected device
+
+        :return: str -- The output current in mA. Empty string if no device is connected
         """
-        Returns the actual current of the device as string.
-        """
+
         if not self._hardware_interface.connect():
             return ""
-        all_values = self._hardware_interface.get_all_values()
+        try:
+            all_values = self._hardware_interface.get_all_values()
+        except PsControllerException:
+            return ""
         return str(all_values.output_current)
 
-    def get_voltage_V(self) -> str:
-        """
-        Returns the actual voltage of the device as string
+    def get_voltage(self):
+        """Get the voltage output of the connected device.
+
+        :return: str -- The output voltage in V. Empty string if no device is connected
         """
         if not self._hardware_interface.connect():
             return ""
-        all_values = self._hardware_interface.get_all_values()
+        try:
+            all_values = self._hardware_interface.get_all_values()
+        except PsControllerException:
+            return ""
         return str(round(all_values.output_voltage / 1000, 1))
 
-    def get_output_on(self) -> bool:
+    def get_output_on(self):
+        """Get if output of the connected device is on
+
+        :return: bool -- If output is on or not
         """
-        Returns bool if output is on or not
-        """
-        if not self._hardware_interface.connect():
+        self._hardware_interface.connect()
+        try:
+            all_values = self._hardware_interface.get_all_values()
+        except PsControllerException:
             return ""
-        all_values = self._hardware_interface.get_all_values()
         return all_values.output_is_on
 
     def set_device_on(self):
+        """Sets output of connected device on
+
+        :return: None
         """
-        Turns the currently connected PS201 on. Raises a serial.Serial exception if not connected
-        """
-        if not self._hardware_interface.connect():
-            return
-        self._hardware_interface.set_device_is_on(True)
+        self._hardware_interface.connect()
+        try:
+            self._hardware_interface.set_device_is_on(True)
+        except PsControllerException:
+            pass
 
     def set_device_off(self):
+        """Sets output of connected device off
+
+        :return: None
         """
-        Turns the currently connected PS201 off. Raises a serial.Serial exception if not connected
-        """
-        if not self._hardware_interface.connected():
-            return
-        self._hardware_interface.set_device_is_on(False)
+        self._hardware_interface.connect()
+        try:
+            self._hardware_interface.set_device_is_on(False)
+        except PsControllerException:
+            pass
 
     def connect(self):
+        """Tries to connect to a DPS201
+
+        :return: bool -- If connecting to a device was successful
+        """
         if self._hardware_interface.connected():
             return True
-        self._hardware_interface.connect()
-        return self._hardware_interface.connected()
+        return self._hardware_interface.connect()
 
     def connected_json(self):
+        """Gets connection status and possible authentication issues
+
+        :return: str -- JSON dict with the following keys
+            - connected
+            - authentication_error
+        """
         connected = self._hardware_interface.connect()
         return_value = dict()
         return_value["connected"] = 1 if connected else 0
@@ -111,47 +151,3 @@ class Wrapper:
 
     def _authentication_errors(self):
         return self._hardware_interface.authentication_errors_on_machine()
-
-
-class MockWrapper(Wrapper):
-    def __init__(self):
-        self._voltage = 0
-        self._current = 0
-        super().__init__()
-
-    def get_all_values_json(self) -> str:
-        mock_values = DeviceValues()
-        mock_values.output_is_on = False
-        mock_values.target_voltage = self._voltage
-        mock_values.target_current = self._current
-        self._voltage += 0.1
-        self._current += 1
-
-        current_values_dict = dict()
-        current_values_dict["outputVoltage"] = mock_values.output_voltage
-        current_values_dict["outputCurrent"] = mock_values.output_current
-        current_values_dict["inputVoltage"] = mock_values.input_voltage
-        current_values_dict["preRegVoltage"] = mock_values.pre_reg_voltage
-        current_values_dict["targetVoltage"] = mock_values.target_voltage
-        current_values_dict["targetCurrent"] = mock_values.target_current
-        current_values_dict["outputOn"] = mock_values.output_is_on
-
-        return json.dumps(current_values_dict)
-
-    def set_device_on(self):
-        pass
-
-    def set_device_off(self):
-        pass
-
-    def set_current(self, current: float):
-        self._current = current
-
-    def set_voltage(self, voltage: int):
-        self._voltage = voltage
-
-    def connect(self):
-        return True
-
-    def _connected(self):
-        return True
