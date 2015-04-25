@@ -1,6 +1,5 @@
 from ..connection.UsbConnection import UsbConnection
 from ps_controller import SerialParser
-from .BaseConnectionInterface import BaseConnectionInterface
 from ..logging.CustomLoggerInterface import CustomLoggerInterface
 
 import serial
@@ -8,11 +7,24 @@ from ps_controller.Constants import Constants
 
 
 class ConnectionFactory:
-    def __init__(self, logger: CustomLoggerInterface):
+    """ Provides access to connections in the system"""
+
+    def __init__(self, logger):
+        """Constructor
+        :param logger: logger used by factory and connection
+        :type logger: CustomLoggerInterface
+        :return: None
+        """
         self._usb_connection = None
         self.logger = logger
 
-    def get_connection(self, connection_type) -> BaseConnectionInterface:
+    def get_connection(self, connection_type):
+        """Get an instance of a connection
+
+        :param connection_type: The type of connection to get
+        :type connection_type: str
+        :return: BaseConnectionInterface -- Connection object
+        """
         if connection_type == "usb":
             if self._usb_connection:
                 return self._usb_connection
@@ -27,11 +39,22 @@ class ConnectionFactory:
 
     @staticmethod
     def _get_device_message_id():
-        """Gives the messages needed to send to device to verify that device is using a given port"""
+        """ Generates a message that can be sent to device for verification.
+            Function _device_id_response_function will then check if the response matches the device signature
+
+        :return: bytearray -- The message used for verification
+        """
         return SerialParser.to_serial(Constants.HANDSHAKE_COMMAND, data='')
 
-    def _device_id_response_function(self, serial_response: bytearray, port: str) -> bool:
-        """Function used to verify an id response from device, i.e. if the response come from our device or not"""
+    def _device_id_response_function(self, serial_response, port):
+        """Verifies device signature after sending data from function _get_device_message
+
+        :param serial_response: Serial response from device
+        :type serial_response: bytearray
+        :param port: Serial port being tried
+        :type port: str
+        :return: bool -- If device is on this port or not
+        """
         not_ack_string = "Did not receive an ACKNOWLEDGE response on port " + str(port)
 
         response = SerialParser.from_serial(serial_response)
@@ -49,5 +72,8 @@ class ConnectionFactory:
             self.logger.log(not_ack_string)
         return return_value
 
-    def _get_serial_link(self) -> serial.Serial:
+    def _get_serial_link(self):
+        """Generates an object that implements the serial.Serial interface
+        :return: serial.Serial -- An object that can talk directly to a serial device
+        """
         return serial.Serial(baudrate=9600, timeout=0.1)

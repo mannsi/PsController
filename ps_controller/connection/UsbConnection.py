@@ -64,8 +64,6 @@ class UsbConnection(BaseConnectionInterface):
     def get(self):
         try:
             serial_response = self._read_device_response(self._base_connection)
-            if serial_response == b'':
-                return None
             return serial_response
         except serial.SerialException:
             self._connected = False
