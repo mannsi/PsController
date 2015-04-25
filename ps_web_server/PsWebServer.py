@@ -1,17 +1,17 @@
 import cherrypy
 import os
-from ps_web_server.PsWebWrapper import Wrapper, MockWrapper
-import json
-import signal
+from ps_web_server.PsWebWrapper import Wrapper
 import sys
+import logging
 
 host = '127.0.0.1'
 port = 8080
+logging_level = logging.NOTSET
 
 
 class PsWebServer(object):
     def __init__(self):
-        self._wrapper = Wrapper()
+        self._wrapper = Wrapper(logging_level)
         self._wrapper.connect()
 
     @cherrypy.expose
@@ -134,8 +134,14 @@ def run():
         }
     }
 
+    if logging_level == logging.NOTSET:
+        cherrypy.log.screen = None
     cherrypy.quickstart(PsWebServer(), '/', conf)
 
+
+def set_debug():
+    global logging_level
+    logging_level = logging.DEBUG
 
 if __name__ == "__main__":
     run()

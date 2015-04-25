@@ -1,14 +1,15 @@
 import json
 from ps_controller import SerialException
+from ps_controller.logging.CustomLogger import CustomLogger
 
 from ps_controller.protocol.ProtocolFactory import ProtocolFactory
 from ps_controller.DeviceValues import DeviceValues
 
 
 class Wrapper:
-    def __init__(self):
-        self._logHandlersAdded = False
-        self._hardware_interface = ProtocolFactory().get_protocol("usb")
+    def __init__(self, logging_level):
+        logger = CustomLogger(logging_level)
+        self._hardware_interface = ProtocolFactory(logger).get_protocol("usb")
 
     def set_voltage(self, voltage: int):
         """
