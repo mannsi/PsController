@@ -6,6 +6,9 @@ OSX = 30
 
 
 def get_current_os():
+    """ Gets the running operating system
+    :return: int -- Operating system as defined in this file
+    """
     system_name = platform.system()
     if system_name == "Windows":
         return WINDOWS

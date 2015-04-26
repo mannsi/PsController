@@ -32,7 +32,7 @@ class ConnectionFactory:
                 self._usb_connection = UsbConnection(
                     logger=self.logger,
                     serial_link_generator=self._get_serial_link,
-                    id_message=ConnectionFactory._get_device_message_id(),
+                    handshake_message=ConnectionFactory._get_device_message_id(),
                     device_verification_func=self._device_id_response_function,
                     device_start_end_byte=ord(Constants.START))
             return self._usb_connection
@@ -42,7 +42,7 @@ class ConnectionFactory:
         """ Generates a message that can be sent to device for verification.
             Function _device_id_response_function will then check if the response matches the device signature
 
-        :return: bytearray -- The message used for verification
+        :return: bytes -- The message used for verification
         """
         return SerialParser.to_serial(Constants.HANDSHAKE_COMMAND, data='')
 
@@ -59,20 +59,21 @@ class ConnectionFactory:
 
         response = SerialParser.from_serial(serial_response)
         if not response:
-            self.logger.log(not_ack_string)
+            self.logger.log_debug(not_ack_string)
             return False
 
         response.data = port
         return_value = response.command == Constants.ACKNOWLEDGE_COMMAND
         if return_value:
             ack_string = "Received ACKNOWLEDGE response on port " + str(port)
-            self.logger.log(ack_string)
+            self.logger.log_debug(ack_string)
         else:
             self.logger.log_receiving(serial_response)
-            self.logger.log(not_ack_string)
+            self.logger.log_debug(not_ack_string)
         return return_value
 
-    def _get_serial_link(self):
+    @staticmethod
+    def _get_serial_link():
         """Generates an object that implements the serial.Serial interface
         :return: serial.Serial -- An object that can talk directly to a serial device
         """

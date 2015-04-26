@@ -50,5 +50,5 @@ class MockLogger(CustomLoggerInterface):
     def log_error(self, error_message: str):
         pass
 
-    def log(self, message: str):
+    def log_debug(self, message: str):
         pass

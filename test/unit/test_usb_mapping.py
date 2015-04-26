@@ -11,10 +11,10 @@ class TestUsbMapping(unittest.TestCase):
         random_data = "adsf1234"
         incomplete_data = "1;2;3"
         self.assertEqual(None,
-                         SerialParser.from_data_to_device_values(random_data),
+                         SerialParser.from_all_data_to_device_values(random_data),
                          'Random mapping data should return none')
         self.assertEqual(None,
-                         SerialParser.from_data_to_device_values(incomplete_data),
+                         SerialParser.from_all_data_to_device_values(incomplete_data),
                          'Incomplete mapping data should return none')
 
     def test_converting_to_and_from_should_not_change_data(self):

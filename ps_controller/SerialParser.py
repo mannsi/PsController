@@ -4,11 +4,16 @@ from ps_controller.DeviceValues import DeviceValues
 from ps_controller.DeviceResponse import DeviceResponse
 
 
-def to_serial(command: str, data='') -> bytearray:
-    """
-    Returns a bytearray containing serial code made from 'command' and 'data'
-    """
+def to_serial(command, data=''):
+    """Creates serial code from input parameters
 
+    :param command: PS201 device command
+    :type command: str
+    :param data: Actual data to/from device
+    :type data: str
+    :return: bytes -- Serial bytes from input params
+
+    """
     hex_data_length = format(len(str(data)), '02X')
 
     ascii_string = Constants.START
@@ -21,12 +26,17 @@ def to_serial(command: str, data='') -> bytearray:
     return ascii_string.encode('ascii')
 
 
-def from_serial(serial_value: bytearray) -> DeviceResponse:
-    """Converts a bytes object into a device response object"""
+def from_serial(serial_value):
+    """Decodes serial to an actual device response
+
+    :param serial_value: Serial bytes to decode
+    :type serial_value: bytes
+    :return: DeviceResponse or None -- A device response if decoding was successful
+    """
     response = DeviceResponse()
     try:
         decoded_serial_value = serial_value.decode('ascii')
-    except (UnicodeDecodeError, AttributeError) :
+    except (UnicodeDecodeError, AttributeError):
         return None
     if decoded_serial_value[0:1] != Constants.START:
         return None
@@ -45,17 +55,16 @@ def from_serial(serial_value: bytearray) -> DeviceResponse:
     return response
 
 
-def from_data_to_device_values(data: str) -> DeviceValues:
-    """
-    Takes data from PS201 and converts it into DeviceValues object
+def from_all_data_to_device_values(data):
+    """Converts an 'all data' data string to device values object
 
-    Parameters
-    ----------
-    data: Comma separated string of values
+    :param data: 'All data' data string
+    :type data: str
+    :return: DeviceValues or None -- Returns device values if successful
     """
     try:
         split_values = [float(x) for x in data.split(";")]
-    except ValueError as e:
+    except ValueError:
         return None
     if len(split_values) < 5:
         return None

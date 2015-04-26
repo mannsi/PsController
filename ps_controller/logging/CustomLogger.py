@@ -25,7 +25,7 @@ class CustomLogger(CustomLoggerInterface):
     def log_error(self, error_message):
         self.logger.log(logging.ERROR, error_message)
 
-    def log(self, message):
+    def log_debug(self, message):
         self.logger.log(logging.INFO, message)
 
     def log_sending(self, message: bytes):

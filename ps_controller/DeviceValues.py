@@ -7,6 +7,3 @@ class DeviceValues:
         self.output_voltage = 0
         self.output_current = 0
         self.pre_reg_voltage = 0
-
-    def to_json(self):
-        return self.__dict__

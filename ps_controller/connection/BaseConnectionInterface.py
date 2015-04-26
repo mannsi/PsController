@@ -1,32 +1,32 @@
 class BaseConnectionInterface:
     def connect(self):
-        """Tries to connect to a PS201 via USB.
+        """Tries to connect to a device
         :return: bool -- Connection successful
         """
         raise NotImplementedError()
 
     def disconnect(self):
-        """Disconnects from the currently connected PS201.
+        """Disconnects from the currently connected device
         :return: None
         """
         raise NotImplementedError()
 
     def connected(self):
-        """Checks if currently connected to a PS201
+        """Checks if currently connected to a device
         :return: bool -- If connected or not
         """
         raise NotImplementedError()
 
-    def get(self) -> bytearray:
-        """Reads a single response from PS201
-        :return: bytearray or None -- A single PS201 response or None if got no response
+    def get(self):
+        """Reads a single response from device
+        :return: bytes or None -- A single device response or None if got no response
         """
         raise NotImplementedError()
 
-    def set(self, sending_data: bytearray):
-        """Sends data to the connected PS201
+    def set(self, sending_data):
+        """Sends data to the connected device
         :param sending_data: The sending data
-        :type sending_data: bytearray
+        :type sending_data: bytes
         :return: None
         """
         raise NotImplementedError()

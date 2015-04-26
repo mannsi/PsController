@@ -9,4 +9,4 @@ class DeviceResponse:
         self.data = ""
         self.crc = ""  # ascii hex string
         self.decoded_response = ""
-        self.serial_response = bytearray()
+        self.serial_response = bytes()

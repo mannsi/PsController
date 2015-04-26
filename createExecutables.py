@@ -1,3 +1,5 @@
+# TODO fix this entire file. It was created when Tkinter was the target
+
 from cx_Freeze import setup, Executable
 import ps_controller.utilities.OsHelper as osHelper
 

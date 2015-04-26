@@ -3,7 +3,7 @@ from ps_controller import PsControllerException
 from ps_controller.DeviceValues import DeviceValues
 from ps_controller.logging.CustomLogger import CustomLogger
 
-from ps_controller.protocol.ProtocolFactory import ProtocolFactory
+from ps_controller.device.DeviceFactory import DeviceFactory
 
 
 class Wrapper:
@@ -11,7 +11,7 @@ class Wrapper:
     def __init__(self, log_level):
         self._logHandlersAdded = False
         logger = CustomLogger(log_level)
-        self._hardware_interface = ProtocolFactory(logger).get_protocol("usb")
+        self._hardware_interface = DeviceFactory().get_device("usb", logger)
 
     def set_voltage(self, voltage):
         """Set the voltage value of the connected PS201
@@ -50,19 +50,20 @@ class Wrapper:
             - output_on
             - connected
         """
+        current_values_dict = dict()
         self._hardware_interface.connect()
         try:
             all_values = self._hardware_interface.get_all_values()
+            current_values_dict["connected"] = 1 if self._hardware_interface.connected() else 0
         except PsControllerException:
             all_values = DeviceValues()
+            current_values_dict["connected"] = 0
 
-        current_values_dict = dict()
         current_values_dict["output_voltage_V"] = round(all_values.output_voltage / 1000, 1)
         current_values_dict["output_current_mA"] = all_values.output_current
         current_values_dict["target_voltage_V"] = round(all_values.target_voltage / 1000, 1)
         current_values_dict["current_limit_mA"] = all_values.target_current
         current_values_dict["output_on"] = 1 if all_values.output_is_on else 0
-        current_values_dict["connected"] = 1 if self._hardware_interface.connected() else 0
 
         return json.dumps(current_values_dict)
 
@@ -112,7 +113,7 @@ class Wrapper:
         """
         self._hardware_interface.connect()
         try:
-            self._hardware_interface.set_device_is_on(True)
+            self._hardware_interface.set_output_on(True)
         except PsControllerException:
             pass
 
@@ -123,7 +124,7 @@ class Wrapper:
         """
         self._hardware_interface.connect()
         try:
-            self._hardware_interface.set_device_is_on(False)
+            self._hardware_interface.set_output_on(False)
         except PsControllerException:
             pass
 

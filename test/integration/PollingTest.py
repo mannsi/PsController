@@ -15,7 +15,7 @@ Preconditions:
 
 import time
 import unittest
-from ps_controller.protocol.ProtocolFactory import ProtocolFactory
+from ps_controller.device.DeviceFactory import DeviceFactory
 
 from ps_controller.DeviceValues import DeviceValues
 from test.Mocks import MockLogger
@@ -33,18 +33,18 @@ SLEEP_BETWEEN_STEPS = 1
 
 class PollingTest(unittest.TestCase):
     def setUp(self):
-        self._hardware_interface = ProtocolFactory(logger=MockLogger()).get_protocol("usb")
+        self._hardware_interface = DeviceFactory(logger=MockLogger()).get_device("usb")
         connected = self._hardware_interface.connect()
         if not connected:
             raise Exception("Unable to connect to PS201")
         self._hardware_interface.set_target_current(0)
         self._hardware_interface.set_target_voltage(0)
-        self._hardware_interface.set_device_is_on(1)
+        self._hardware_interface.set_output_on(1)
 
     def tearDown(self):
         self._hardware_interface.set_target_current(0)
         self._hardware_interface.set_target_voltage(0)
-        self._hardware_interface.set_device_is_on(0)
+        self._hardware_interface.set_output_on(0)
 
     def test_voltage(self):
         """
