@@ -4,9 +4,9 @@ from setuptools import setup, find_packages
 from ps_controller import __version__
 
 setup(
-    name="ps_controller"
+    name="PsController"
     , version=__version__
-    , description="ps_controller"
+    , description="PsController"
     , packages=find_packages()
     , install_requires=[
         "crcmod == 1.7",
