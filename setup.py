@@ -6,7 +6,7 @@ from ps_controller import __version__
 setup(
     name="PsController"
     , version=__version__
-    , description="PsController"
+    , description="Software used to control the DPS201"
     , packages=find_packages()
     , install_requires=[
         "crcmod == 1.7",
