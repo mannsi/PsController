@@ -1,6 +1,8 @@
 import ps_web_server.PsWebServer
 import argparse
 import logging
+import os
+import sys
 from ps_controller import __version__
 
 
@@ -32,7 +34,11 @@ def run():
         print(args.port)
         port = args.port
 
-    server = ps_web_server.PsWebServer.PsWebServer(port, ps_log_level, web_server_debugging)
+    executable_path = None
+    if hasattr(sys, "frozen"):
+        executable_path = os.path.dirname(os.path.abspath(sys.executable))
+
+    server = ps_web_server.PsWebServer.PsWebServer(port, ps_log_level, web_server_debugging, executable_path)
 
     server.start()
 

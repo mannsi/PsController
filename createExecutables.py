@@ -1,18 +1,31 @@
-# TODO fix this entire file. It was created when Tkinter was the target
+import os
+from ez_setup import use_setuptools
 
+use_setuptools()
+from setuptools import setup, find_packages
 from cx_Freeze import setup, Executable
-import ps_controller.utilities.OsHelper as osHelper
+from ps_controller import __version__
 
-platFormBase = "Console"
-if osHelper.get_current_os() == osHelper.WINDOWS:
-    platFormBase = "Win32GUI"  # For windows to hide the console window in the back
+data_files = ['msvcr100.dll', os.path.join('ps_web_server', 'css'),
+              os.path.join('ps_web_server', 'js'),
+              os.path.join('ps_web_server', 'fonts')]
 
-buildOptions = dict(include_files=['Icons/'])
+build_exe_options = {"packages": ["cherrypy", "crcmod", "serial"], "include_files": data_files}
 
 setup(
-    name="ps_controller"
-    , version="0.1"
-    , description="ps_controller"
-    , options=dict(build_exe=buildOptions)
-    , executables=[Executable("psControllerMain.py", base=platFormBase, targetName="ps_controller.exe")]
+    name="PsController"
+    , version=__version__
+    , description="Software used to control the DPS201"
+    , packages=find_packages()
+    , install_requires=[
+        "crcmod == 1.7",
+        "pyserial == 2.7",
+        "cherrypy == 3.2.4"
+    ]
+    # , data_files=[('/etc/init.d', ['ps_web_server/auto_start_script/ps_web_server'])]
+    , package_data={'ps_web_server': ['css/*.css', 'fonts/museo/*', 'js/*.js', 'index.html']}
+    , scripts=["psControllerMain.py"]
+    , entry_points={"console_scripts": ["PsController = psControllerMain:run"]}
+    , executables=[Executable("psControllerMain.py", targetName="ps_controller.exe")]
+    , options={"build_exe": build_exe_options}
 )

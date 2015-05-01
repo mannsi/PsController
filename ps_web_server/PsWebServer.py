@@ -1,17 +1,17 @@
 import cherrypy
 import os
-import traceback
 from ps_web_server.PsWebWrapper import Wrapper
 
 
 class PsWebServer(object):
-    def __init__(self, port, ps_log_level, server_logging):
+    def __init__(self, port, ps_log_level, server_logging, resources_base_dir=None):
         self._host = '127.0.0.1'
         self._port = port
         self.server_logging = server_logging
         self._wrapper = Wrapper(ps_log_level)
+        self.resources_base_dir = resources_base_dir or os.path.abspath(os.path.split(__file__)[0])
 
-    def start(self):
+    def start(self, resources_base_dir=None):
         """Starts the web server
         :return: None
         """
@@ -23,7 +23,7 @@ class PsWebServer(object):
             },
             '/': {
                 'tools.sessions.on': True,
-                'tools.staticdir.root': os.path.abspath(os.path.split(__file__)[0])
+                'tools.staticdir.root': self.resources_base_dir
             },
             '/css': {
                 'tools.staticdir.on': True,
@@ -60,7 +60,7 @@ class PsWebServer(object):
         :return: str -- Index page of web server
         """
         self._wrapper.connect()
-        index_file_path = os.path.join(os.path.dirname(__file__), 'index.html')
+        index_file_path = os.path.join(self.resources_base_dir, 'index.html')
         with open(index_file_path)as f:
             index = f.read()
         return index
@@ -78,10 +78,8 @@ class PsWebServer(object):
             - connected
 
         """
-        try:
-            return self._wrapper.get_all_values_json()
-        except:
-            traceback.print_exc()
+        return self._wrapper.get_all_values_json()
+
 
     @cherrypy.expose
     def voltage(self, **params):
@@ -139,10 +137,9 @@ class PsWebServer(object):
         return self._wrapper.connected_json()
 
 
-
 # Catch the Ctrl-C interrupt and shut down the cherrypy server
 # def signal_handler(signal, frame):
-#    cherrypy.engine.exit()
+# cherrypy.engine.exit()
 #    sys.exit(0)
 
 
