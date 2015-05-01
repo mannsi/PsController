@@ -8,6 +8,7 @@ from ps_controller.device.DeviceFactory import DeviceFactory
 
 class Wrapper:
     """ Abstracts communication to the device for the PsWebServer"""
+
     def __init__(self, log_level):
         self._logHandlersAdded = False
         logger = CustomLogger(log_level)
@@ -22,7 +23,7 @@ class Wrapper:
         """
         self._hardware_interface.connect()
         try:
-            self._hardware_interface.set_target_voltage(int(voltage*1000))
+            self._hardware_interface.set_target_voltage(int(voltage * 1000))
         except PsControllerException:
             pass
 
@@ -49,6 +50,7 @@ class Wrapper:
             - current_limit_mA
             - output_on
             - connected
+            - authentication_error
         """
         current_values_dict = dict()
         self._hardware_interface.connect()
@@ -64,6 +66,8 @@ class Wrapper:
         current_values_dict["target_voltage_V"] = round(all_values.target_voltage / 1000, 1)
         current_values_dict["current_limit_mA"] = all_values.target_current
         current_values_dict["output_on"] = 1 if all_values.output_is_on else 0
+        current_values_dict["authentication_error"] = 0 if self._hardware_interface.connected() else (
+            1 if self._authentication_errors() else 0)
 
         return json.dumps(current_values_dict)
 
@@ -136,19 +140,6 @@ class Wrapper:
         if self._hardware_interface.connected():
             return True
         return self._hardware_interface.connect()
-
-    def connected_json(self):
-        """Gets connection status and possible authentication issues
-
-        :return: str -- JSON dict with the following keys
-            - connected
-            - authentication_error
-        """
-        connected = self._hardware_interface.connect()
-        return_value = dict()
-        return_value["connected"] = 1 if connected else 0
-        return_value["authentication_error"] = 0 if connected else (1 if self._authentication_errors() else 0)
-        return json.dumps(return_value)
 
     def _authentication_errors(self):
         return self._hardware_interface.authentication_errors_on_machine()

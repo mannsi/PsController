@@ -76,6 +76,7 @@ class PsWebServer(object):
             - current_limit_mA
             - output_on
             - connected
+            - authentication_error
 
         """
         return self._wrapper.get_all_values_json()
@@ -124,27 +125,6 @@ class PsWebServer(object):
                 self._wrapper.set_device_off()
         else:
             return "1" if self._wrapper.get_output_on() else "0"
-
-    @cherrypy.expose
-    def device_connected(self):
-        """
-        Gets connection status and possible authentication issues
-
-        :return: str -- JSON dict with the following keys
-            - connected
-            - authentication_error
-        """
-        return self._wrapper.connected_json()
-
-
-# Catch the Ctrl-C interrupt and shut down the cherrypy server
-# def signal_handler(signal, frame):
-# cherrypy.engine.exit()
-#    sys.exit(0)
-
-
-#signal.signal(signal.SIGHUP, signal_handler)
-#signal.signal(signal.SIGINT, signal_handler)
 
 
 

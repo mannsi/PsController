@@ -67,7 +67,7 @@ var unblockUI = function(){
 }
 
 var start = function(){
-    $.ajax( document.location.origin + "/device_connected" )
+    $.ajax( document.location.origin + "/all_values" )
       .done(function(json_reply) {
             var reply = jQuery.parseJSON(json_reply)
             if (!reply["connected"]){
