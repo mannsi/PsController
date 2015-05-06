@@ -78,7 +78,7 @@ class UsbConnection(BaseConnectionInterface):
                 tmp_connection.open()
                 tmp_connection.close()
                 return True
-            except serial.SerialException:
+            except (serial.SerialException, OSError):
                 pass
         return False
 
@@ -96,7 +96,7 @@ class UsbConnection(BaseConnectionInterface):
                 tmp_connection.open()
                 available.append(tmp_connection.port)
                 tmp_connection.close()
-            except serial.SerialException:
+            except (serial.SerialException, OSError):
                 pass
         return available
 
@@ -134,7 +134,7 @@ class UsbConnection(BaseConnectionInterface):
         try:
             tmp_connection.open()
             self._send_to_device(tmp_connection, self._id_message)
-        except serial.SerialException:
+        except (serial.SerialException, OSError):
             return False
         self._logger.log_debug("Sending handshake data on port " + str(usb_port))
         device_serial_response = self._read_device_response(tmp_connection)
