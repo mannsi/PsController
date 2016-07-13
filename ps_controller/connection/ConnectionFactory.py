@@ -31,8 +31,8 @@ class ConnectionFactory:
 
     def _device_id_response_function(self, serial_response: bytearray, port: str) -> bool:
         """Function used to verify an id response from device, i.e. if the response come from our device or not"""
-        not_ack_string = "Did not receive an ACKNOWLEDGE response on port " + port
-        ack_string = "Received ACKNOWLEDGE response on port " + port
+        not_ack_string = "Did not receive an ACKNOWLEDGE response on port " + str(port)
+        ack_string = "Received ACKNOWLEDGE response on port " + str(port)
         try:
             if not serial_response:
                 self.logger.log_info(not_ack_string)
