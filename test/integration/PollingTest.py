@@ -33,7 +33,7 @@ SLEEP_BETWEEN_STEPS = 1
 
 class PollingTest(unittest.TestCase):
     def setUp(self):
-        self._hardware_interface = DeviceFactory(logger=MockLogger()).get_device("usb")
+        self._hardware_interface = DeviceFactory().get_device("usb", logger=MockLogger())
         connected = self._hardware_interface.connect()
         if not connected:
             raise Exception("Unable to connect to PS201")
