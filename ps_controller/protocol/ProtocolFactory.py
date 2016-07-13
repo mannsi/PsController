@@ -10,9 +10,9 @@ class ProtocolFactory:
         self._usb_protocol = None
         self.logger = logger
 
-    def get_protocol(self, protocol_type) -> BaseProtocolInterface:
+    def get_protocol(self, protocol_type, log_level=None) -> BaseProtocolInterface:
         if not self.logger:
-            self.logger = CustomLogger()
+            self.logger = CustomLogger(log_level)
         connection = ConnectionFactory(self.logger).get_connection(connection_type=protocol_type)
         if protocol_type == "usb":
             if self._usb_protocol:

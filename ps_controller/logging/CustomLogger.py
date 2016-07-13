@@ -1,15 +1,12 @@
 import os
-
-__author__ = 'mannsi'
-
 import logging
-
 from .CustomLoggerInterface import CustomLoggerInterface
 
 
 class CustomLogger(CustomLoggerInterface):
-    def __init__(self):
-        log_level = logging.DEBUG
+    def __init__(self, log_level):
+        if not log_level:
+            log_level = logging.ERROR
         logger_name = "PS201Logger"
         self.logger = logging.getLogger(logger_name)
         self.logger.propagate = False
