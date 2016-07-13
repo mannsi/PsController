@@ -129,8 +129,6 @@ class MockWrapper(Wrapper):
         current_values_dict = dict()
         current_values_dict["outputVoltage"] = mock_values.output_voltage
         current_values_dict["outputCurrent"] = mock_values.output_current
-        current_values_dict["inputVoltage"] = mock_values.input_voltage
-        current_values_dict["preRegVoltage"] = mock_values.pre_reg_voltage
         current_values_dict["targetVoltage"] = mock_values.target_voltage
         current_values_dict["targetCurrent"] = mock_values.target_current
         current_values_dict["outputOn"] = mock_values.output_is_on

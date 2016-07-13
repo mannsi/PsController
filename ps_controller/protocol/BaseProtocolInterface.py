@@ -34,6 +34,7 @@ class BaseProtocolInterface:
     def set_target_voltage(self, voltage: float):
         """
         Set the target voltage of the connected PS201.
+        To set 1V then set voltage value to 1000
         Throws SerialException if not connected
         """
         raise NotImplementedError()
@@ -41,6 +42,7 @@ class BaseProtocolInterface:
     def set_target_current(self, current: int):
         """
         Set the target current of the connected PS201.
+        To set to 1A set the current value to 1
         Throws SerialException if not connected
         """
         raise NotImplementedError()
