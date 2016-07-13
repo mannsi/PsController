@@ -106,7 +106,7 @@ def signal_handler(signal, frame):
     sys.exit(0)
 
 
-signal.signal(signal.SIGHUP, signal_handler)
+# signal.signal(signal.SIGHUP, signal_handler)
 signal.signal(signal.SIGINT, signal_handler)
 
 
