@@ -21,7 +21,7 @@ class DeviceFactory:
         :return: BaseDeviceInterface -- Returns the device
         """
         if not logger:
-            logger = CustomLogger(logging.DEBUG)
+            logger = CustomLogger(logging.ERROR)
         connection = ConnectionFactory(logger).get_connection(connection_type=device_type)
         if device_type == "usb":
             if self._usb_device:
