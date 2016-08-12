@@ -1,23 +1,26 @@
 window.onOffCheckboxChanging = false;
 window.deviceConnected = false;
+var disconnectedCounter = 3; // Number of times we receive a disconnected signal until a connection lost string is shown
 
 var newCurrentValues = function(reply) {
-    var bla = document.location.origin;
-    var newIsConnected = (reply["connected"]);
-    var oldIsConnected = window.deviceConnected;
-    if (oldIsConnected && !newIsConnected){
-        // Connection lost
-        blockUI('Unable to connect to device. Trying to reconnect ...');
-    }
-    else if (!oldIsConnected && newIsConnected){
-        // Connection restored
+    var isConnected = reply["connected"];
+
+    if (window.ui_blocked && isConnected){
         unblockUI();
+    } else if(!window.ui_blocked && !isConnected){
+        if (disconnectedCounter == 0){
+            blockUI('Unable to connect to device. Trying to reconnect ...');
+        } else {
+            disconnectedCounter--;
+        }
     }
-    else if (window.ui_blocked && newIsConnected){
-        // Receiving values after server has been down
-        unblockUI();
+
+    if (isConnected){
+        disconnectedCounter = 3;
     }
-    window.deviceConnected = newIsConnected;
+
+    window.deviceConnected = isConnected;
+
     if (window.deviceConnected){
         updateDisplayValues(reply)
     }
@@ -37,11 +40,11 @@ var updateValues = function() {
     $.ajax( document.location.origin + "/all_values" )
         .done(function(json_reply) {
             newCurrentValues(jQuery.parseJSON(json_reply));
-            setTimeout(updateValues, 1000);
+            setTimeout(updateValues, 500);
         })
         .fail(function() {
             blockUI('PS201 web server not found. <br /> Start it by running "PsController" from terminal');
-            setTimeout(updateValues, 1000);
+            setTimeout(updateValues, 500);
         })
 }
 
